@@ -6,6 +6,9 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
+// import roles
+use Spatie\Permission\Models\Role;
+
 
 class ClientForm
 {
@@ -14,9 +17,10 @@ class ClientForm
         return $schema
             ->schema([
                 Select::make('user_id')
-                    ->relationship('user', 'name', fn ($query) => $query->where('role', 'client'))
+                    ->relationship('user', 'name', fn ($query) => $query->whereHas('roles', fn ($query) => $query->where('name', 'client')))
                     ->searchable()
                     ->required()
+                    ->preload()
                     ->label('User (Client)'),
                     TextInput::make('company_name')
                     ->required()

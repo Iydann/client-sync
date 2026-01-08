@@ -20,15 +20,14 @@ return [
         'show_model_path' => true,
         'cluster' => null,
         'tabs' => [
-            'pages' => false,
-            'widgets' => false,
-            'resources' => false,
-            'custom_permissions' => false,
+            'pages' => true,
+            'widgets' => true,
+            'resources' => true,
+            'custom_permissions' => true,
         ],
     ],
 
     /*
-    |--------------------------------------------------------------------------
     | Multi-Tenancy
     |--------------------------------------------------------------------------
     |
@@ -67,7 +66,7 @@ return [
     'super_admin' => [
         'enabled' => true,
         'name' => 'super_admin',
-        'define_via_gate' => false,
+        'define_via_gate' => true,
         'intercept_gate' => 'before',
     ],
 

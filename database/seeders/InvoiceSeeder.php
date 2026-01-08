@@ -25,7 +25,7 @@ class InvoiceSeeder extends Seeder
             'project_id' => 1,
             'invoice_number' => 'INV-2026-002',
             'amount' => 10000000.00,
-            'status' => 'pending',
+            'status' => 'unpaid',
             'due_date' => now()->addDays(15),
         ]);
 
@@ -34,7 +34,7 @@ class InvoiceSeeder extends Seeder
             'project_id' => 2,
             'invoice_number' => 'INV-2026-003',
             'amount' => 25000000.00,
-            'status' => 'pending',
+            'status' => 'unpaid',
             'due_date' => now()->addDays(30),
         ]);
 
@@ -43,7 +43,7 @@ class InvoiceSeeder extends Seeder
             'project_id' => 3,
             'invoice_number' => 'INV-2026-004',
             'amount' => 50000000.00,
-            'status' => 'pending',
+            'status' => 'cancelled',
             'due_date' => now()->addDays(20),
         ]);
 

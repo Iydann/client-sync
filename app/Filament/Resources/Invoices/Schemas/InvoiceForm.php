@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Invoices\Schemas;
 
+use App\Models\Invoice;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -20,6 +21,10 @@ class InvoiceForm
                     ->required()
                     ->label('Project'),
                 TextInput::make('invoice_number')
+                    ->label('Invoice Number')
+                    ->disabled()
+                    ->dehydrated()
+                    ->default(fn () => Invoice::previewInvoiceNumber())
                     ->required()
                     ->maxLength(100)
                     ->unique(ignoreRecord: true),

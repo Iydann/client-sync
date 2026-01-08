@@ -7,6 +7,7 @@ use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProjects;
 use App\Filament\Resources\Projects\Schemas\ProjectForm;
 use App\Filament\Resources\Projects\Tables\ProjectsTable;
+use App\Filament\Resources\Projects\RelationManagers;
 use App\Models\Project;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -33,7 +34,8 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\MilestonesRelationManager::class,
+            RelationManagers\InvoicesRelationManager::class,
         ];
     }
 

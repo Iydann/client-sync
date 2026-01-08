@@ -15,7 +15,7 @@ class ClientsTable
         return $table
             ->columns([
                 TextColumn::make('user.email')
-                    ->label('Contact')
+                    ->label('Email')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('company_name')

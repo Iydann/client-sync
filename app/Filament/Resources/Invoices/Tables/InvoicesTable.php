@@ -30,10 +30,10 @@ class InvoicesTable
                     ->searchable()
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'unpaid' => 'danger',
+                        'unpaid' => 'gray',
                         'paid' => 'success',
                         'overdue' => 'warning',
-                        'cancelled' => 'gray',
+                        'cancelled' => 'danger',
                         default => 'gray',
                     }),
                 TextColumn::make('due_date')
