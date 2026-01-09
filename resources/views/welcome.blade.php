@@ -51,7 +51,7 @@
 
         <div class="flex flex-col items-center gap-6">
             <a href="{{ url('/portal') }}" 
-               class="px-12 py-5 bg-gray-500 hover:bg-gray-600 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-gray-200 hover:-translate-y-1">
+               class="px-12 py-5 bg-gray-500 hover:bg-gray-900 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-gray-200 hover:-translate-y-1">
                 Access Portal
             </a>
         </div>
