@@ -6,8 +6,6 @@ use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\Client;
 use App\Models\Project;
-// import heroicons
-use Filament\Support\Icons\Heroicon;
 
 class StatsOverview extends StatsOverviewWidget
 {
@@ -19,6 +17,7 @@ class StatsOverview extends StatsOverviewWidget
         // Active Projects (in_progress)
         $activeProjects = Project::where('status', 'in_progress')->count();
         $totalProjects = Project::count();
+        
         return [
             Stat::make('total_clients', 'Total Clients')
                 ->description($totalClients)

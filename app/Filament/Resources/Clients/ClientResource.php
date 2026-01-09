@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Clients;
 
+use App\NavigationGroup;
 use App\Filament\Resources\Clients\Pages\CreateClient;
 use App\Filament\Resources\Clients\Pages\EditClient;
 use App\Filament\Resources\Clients\Pages\ListClients;
@@ -9,6 +10,7 @@ use App\Filament\Resources\Clients\Schemas\ClientForm;
 use App\Filament\Resources\Clients\Tables\ClientsTable;
 use App\Filament\Resources\Clients\RelationManagers;
 use App\Models\Client;
+use UnitEnum;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -18,8 +20,10 @@ use Filament\Tables\Table;
 class ClientResource extends Resource
 {
     protected static ?string $model = Client::class;
+    protected static string|UnitEnum|null $navigationGroup = "Project Management";
+    protected static ?int $navigationSort = 1;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
     public static function form(Schema $schema): Schema
     {
