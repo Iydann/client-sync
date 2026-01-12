@@ -2,48 +2,80 @@
 
 namespace App\Filament\Resources\Projects\RelationManagers;
 
-use App\Filament\Resources\Milestones\Schemas\MilestoneForm;
 use App\Filament\Resources\Milestones\Tables\MilestonesTable;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Forms;
+use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 
 class MilestonesRelationManager extends RelationManager
 {
     protected static string $relationship = 'milestones';
 
+    protected static ?string $title = 'Milestones';
+
     public function table(Table $table): Table
     {
         return MilestonesTable::configure($table)
+            ->reorderable('order')
+            ->defaultSort('order')
             ->headerActions([
                 CreateAction::make()
                     ->schema([
-                        TextInput::make('name')
+                        Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                        Toggle::make('is_completed')
+                        Forms\Components\TextInput::make('order')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated()
+                            ->default(function () {
+                                $maxOrder = $this->ownerRecord->milestones()->max('order') ?? -1;
+                                return $maxOrder + 1;
+                            })
+                            ->helperText('Automatically set to next sequence'),
+                        Forms\Components\Toggle::make('is_completed')
                             ->label('Completed')
                             ->default(false),
-                        TextInput::make('order')
-                            ->numeric()
-                            ->default( function () {
-                                return $this->ownerRecord->milestones()->max('order') + 1;
-                            }),
                     ]),
             ])
             ->recordActions([
                 EditAction::make()
                     ->schema([
-                        TextInput::make('name')
+                        Forms\Components\TextInput::make('name')
                             ->required()
                             ->maxLength(255),
-                        Toggle::make('is_completed')
+                        Forms\Components\TextInput::make('order')
+                            ->numeric()
+                            ->helperText('Change order to resequence milestone'),
+                        Forms\Components\Toggle::make('is_completed')
                             ->label('Completed'),
-                        TextInput::make('order')
-                            ->numeric(),
+                    ]),
+                DeleteAction::make(),
+            ])
+            ->emptyStateHeading('No milestones')
+            ->emptyStateDescription('Add milestones to track project progress.')
+            ->emptyStateActions([
+                CreateAction::make()
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('order')
+                            ->numeric()
+                            ->disabled()
+                            ->dehydrated()
+                            ->default(function () {
+                                $maxOrder = $this->ownerRecord->milestones()->max('order') ?? -1;
+                                return $maxOrder + 1;
+                            })
+                            ->helperText('Automatically set to next sequence'),
+                        Forms\Components\Toggle::make('is_completed')
+                            ->label('Completed')
+                            ->default(false),
                     ]),
             ]);
     }

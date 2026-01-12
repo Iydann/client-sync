@@ -18,6 +18,7 @@ class ProjectSeeder extends Seeder
             'client_id' => 1,
             'title' => 'Website Company Profile',
             'description' => 'Pembuatan website company profile dengan fitur blog dan portfolio.',
+            'progress' => 50,
             'status' => 'in_progress',
             'deadline' => now()->addDays(30),
         ]);
@@ -35,6 +36,7 @@ class ProjectSeeder extends Seeder
             'client_id' => 2,
             'title' => 'E-Commerce Platform',
             'description' => 'Platform e-commerce dengan payment gateway dan sistem kurir.',
+            'progress' => 66,
             'status' => 'in_progress',
             'deadline' => now()->addDays(90),
         ]);
@@ -44,6 +46,7 @@ class ProjectSeeder extends Seeder
             'client_id' => 3,
             'title' => 'Mobile App Delivery',
             'description' => 'Aplikasi mobile untuk layanan delivery makanan.',
+            'progress' => 100,
             'status' => 'completed',
             'deadline' => now()->subDays(10),
         ]);

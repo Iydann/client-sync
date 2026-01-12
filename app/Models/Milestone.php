@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -24,4 +25,16 @@ class Milestone extends Model
     public function project() {
         return $this->belongsTo(Project::class);
     }
+
+    protected static function booted(): void
+{
+    static::saved(function (Milestone $milestone) {
+        $milestone->project->updateProgress();
+    });
+    
+    static::deleted(function (Milestone $milestone) {
+        $milestone->project->updateProgress();
+    });
 }
+}   
+

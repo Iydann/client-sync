@@ -14,6 +14,7 @@ class Project extends Model
         'client_id',
         'title',
         'description',
+        'progress',
         'status',
         'deadline',
     ];
@@ -23,6 +24,19 @@ class Project extends Model
         'deadline' => 'date',
     ];
 
+    public function updateProgress(): void
+    {
+        $totalMilestones = $this->milestones()->count();
+        if ($totalMilestones === 0) {
+            $this->update(['progress' => 0]);
+            return;
+        }
+
+        $completedMilestones = $this->milestones()->where('is_completed', true)->count();
+        $progressPercentage = round(($completedMilestones / $totalMilestones) * 100);
+        $this->update(['progress' => $progressPercentage]);
+    }
+    
     // Relationships
     public function client()
     {

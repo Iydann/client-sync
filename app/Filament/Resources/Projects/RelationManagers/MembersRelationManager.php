@@ -44,13 +44,6 @@ class MembersRelationManager extends RelationManager
                 DetachAction::make()
                     ->label('Remove'),
             ])
-            ->toolbarActions([
-                // BulkActionGroup::make([
-                //     DetachBulkAction::make(),
-                // ]),
-                DetachBulkAction::make()
-                    ->label('Remove Selected'),
-            ])
             ->emptyStateHeading('No team members')
             ->emptyStateDescription('Add team members to this project.')
             ->emptyStateActions([

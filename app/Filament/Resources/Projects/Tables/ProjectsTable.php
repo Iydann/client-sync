@@ -8,6 +8,8 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
+use function Laravel\Prompts\progress;
+
 class ProjectsTable
 {
     public static function configure(Table $table): Table
@@ -21,17 +23,14 @@ class ProjectsTable
                 TextColumn::make('title')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('progress')
+                    ->label('Progress')
+                    ->sortable()
+                    ->formatStateUsing(fn($state) => $state . '%'),
                 TextColumn::make('status')
                     ->badge()
                     ->sortable()
-                    ->searchable()
-                    ->color(fn($state) => match ($state) {
-                        'pending' => 'gray',
-                        'in_progress' => 'warning',
-                        'completed' => 'success',
-                        'cancelled' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->searchable(),
                 TextColumn::make('deadline')
                     ->date()
                     ->sortable(),

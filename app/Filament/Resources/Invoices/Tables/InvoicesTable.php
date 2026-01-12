@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Invoices\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -24,7 +26,8 @@ class InvoicesTable
                 TextColumn::make('amount')
                     ->numeric()
                     ->money('IDR', true)
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize(Sum::make()),
                 TextColumn::make('status')
                     ->sortable()
                     ->searchable()
