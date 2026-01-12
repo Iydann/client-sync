@@ -6,6 +6,7 @@ use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\Client;
 use App\Models\Project;
+use App\Models\Invoice;
 
 class StatsOverview extends StatsOverviewWidget
 {
@@ -18,22 +19,25 @@ class StatsOverview extends StatsOverviewWidget
         $activeProjects = Project::where('status', 'in_progress')->count();
         $totalProjects = Project::count();
         
-        return [
-            Stat::make('total_clients', 'Total Clients')
-                ->description($totalClients)
-                ->icon('heroicon-o-users')
-                ->color('primary'),
+        // total invoices
+        $totalinvoices = Invoice::count();
 
-            Stat::make('active_projects', 'Active Projects')
-                ->description($activeProjects)
+        return [
+            Stat::make('Total Projects', $totalProjects)
+                ->icon('heroicon-o-rectangle-stack')
+                ->color('info'),
+
+            Stat::make('Active Projects', $activeProjects)
                 ->icon('heroicon-o-briefcase')
                 ->color('success'),
 
-            Stat::make('total_projects', 'Total Projects')
-                ->description($totalProjects)
-                ->icon('heroicon-o-rectangle-stack')
-                ->color('info'),
-            
+            Stat::make('Total Clients', $totalClients)
+                ->icon('heroicon-o-users')
+                ->color('primary'),
+
+            Stat::make('Total Invoices', $totalinvoices)
+                ->icon('heroicon-o-document-text')
+                ->color('warning'),
         ];
     }
 }

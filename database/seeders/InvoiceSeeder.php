@@ -51,7 +51,7 @@ class InvoiceSeeder extends Seeder
             'project_id' => 3,
             'invoice_number' => 'INV-2026-005',
             'amount' => 30000000.00,
-            'status' => 'overdue',
+            'status' => 'paid',
             'due_date' => now()->subDays(10),
         ]);
 

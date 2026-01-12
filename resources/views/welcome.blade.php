@@ -12,10 +12,7 @@
     <div class="flex flex-col items-center justify-center min-h-screen px-6 py-16">
         
         <header class="max-w-4xl text-center mb-16">
-            <span class="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide text-black-600 uppercase bg-gray-100 rounded-full">
-                All-in-One Workspace
-            </span>
-            <h1 class="text-5xl font-extrabold tracking-tight text-[#1a202c] mb-6 leading-tight">
+            <h1 class="text-5xl font-extrabold tracking-tight text-[#000000] mb-6 leading-tight">
                 Project & Billing <span class="text-gray-500">Management System</span>
             </h1>
             <p class="text-xl text-gray-500 max-w-2xl mx-auto">
@@ -51,7 +48,7 @@
 
         <div class="flex flex-col items-center gap-6">
             <a href="{{ url('/portal') }}" 
-               class="px-12 py-5 bg-gray-500 hover:bg-gray-900 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-gray-200 hover:-translate-y-1">
+               class="px-12 py-5 bg-gray-900 hover:bg-gray-600 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-gray-200 hover:-translate-y-1">
                 Access Portal
             </a>
         </div>

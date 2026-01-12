@@ -16,11 +16,11 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create roles first
-        $superAdminRole = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
-        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $clientRole = Role::firstOrCreate(['name' => 'client', 'guard_name' => 'web']);
-        $developerRole = Role::firstOrCreate(['name' => 'developer', 'guard_name' => 'web']);
+        // Get roles (should be created by RolePermissionSeeder first)
+        $superAdminRole = Role::where('name', 'super_admin')->first();
+        $adminRole = Role::where('name', 'admin')->first();
+        $clientRole = Role::where('name', 'client')->first();
+        $developerRole = Role::where('name', 'developer')->first();
 
         // Super Admin User
         $superAdmin = User::create([

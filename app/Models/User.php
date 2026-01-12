@@ -51,4 +51,9 @@ class User extends Authenticatable
     public function client() {
         return $this->hasOne(Client::class);
     }
+    
+    public function projects() {
+        return $this->belongsToMany(Project::class, 'project_members')
+            ->withTimestamps();
+    }
 }

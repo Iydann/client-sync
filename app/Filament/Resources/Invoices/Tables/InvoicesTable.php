@@ -32,7 +32,6 @@ class InvoicesTable
                     ->color(fn (string $state): string => match ($state) {
                         'unpaid' => 'gray',
                         'paid' => 'success',
-                        'overdue' => 'warning',
                         'cancelled' => 'danger',
                         default => 'gray',
                     }),

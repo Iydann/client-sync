@@ -55,9 +55,6 @@ class Invoice extends Model
     }
 
     // Helper methods
-    public function isOverdue() {
-        return $this->status !== 'paid' && $this->due_date->isPast();
-    }
     public function isPaid() {
         return $this->status === 'paid';
     }

@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
+use Filament\Resources\RelationManagers\RelationManager;
 
 class InvoiceForm
 {
@@ -19,7 +20,9 @@ class InvoiceForm
                     ->searchable()
                     ->preload()
                     ->required()
-                    ->label('Project'),
+                    ->label('Project')
+                    ->disabled(fn ($context) => $context === 'edit' || request()->routeIs('filament.*.resources.projects.edit'))
+                    ->hidden(fn () => request()->routeIs('filament.*.resources.projects.edit')),
                 TextInput::make('invoice_number')
                     ->label('Invoice Number')
                     ->disabled()
@@ -37,7 +40,6 @@ class InvoiceForm
                     ->options([
                         'unpaid' => 'Unpaid',
                         'paid' => 'Paid',
-                        'overdue' => 'Overdue',
                         'cancelled' => 'Cancelled',
                     ])
                     ->required()

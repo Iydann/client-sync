@@ -28,12 +28,20 @@ class Project extends Model
     {
         return $this->belongsTo(Client::class);
     }
+    
     public function milestones()
     {
         return $this->hasMany(Milestone::class);
     }
+    
     public function invoices()
     {
         return $this->hasMany(Invoice::class);
+    }
+    
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'project_members')
+            ->withTimestamps();
     }
 }
