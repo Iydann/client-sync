@@ -34,8 +34,7 @@ class InvoiceForm
                 TextInput::make('amount')
                     ->required()
                     ->numeric()
-                    ->prefix('Rp')
-                    ->step('0.01'),
+                    ->prefix('IDR'),
                 Select::make('status')
                     ->options([
                         'unpaid' => 'Unpaid',

@@ -33,8 +33,7 @@ class InvoicesRelationManager extends RelationManager
                         Forms\Components\TextInput::make('amount')
                             ->required()
                             ->numeric()
-                            ->prefix('Rp')
-                            ->step('0.01'),
+                            ->prefix('Rp'),
                         Forms\Components\Select::make('status')
                             ->options([
                                 'unpaid' => 'Unpaid',
@@ -58,8 +57,7 @@ class InvoicesRelationManager extends RelationManager
                         Forms\Components\TextInput::make('amount')
                             ->required()
                             ->numeric()
-                            ->prefix('Rp')
-                            ->step('0.01'),
+                            ->prefix('Rp'),
                         Forms\Components\Select::make('status')
                             ->options([
                                 'unpaid' => 'Unpaid',
@@ -87,8 +85,7 @@ class InvoicesRelationManager extends RelationManager
                         Forms\Components\TextInput::make('amount')
                             ->required()
                             ->numeric()
-                            ->prefix('Rp')
-                            ->step('0.01'),
+                            ->prefix('Rp'),
                         Forms\Components\Select::make('status')
                             ->options([
                                 'unpaid' => 'Unpaid',

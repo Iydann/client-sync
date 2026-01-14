@@ -31,6 +31,14 @@ class ProjectsTable
                     ->badge()
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('contract_value')
+                    ->label('Contract Value')
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0)),
+                TextColumn::make('payment_progress')
+                    ->label('Payment Progress')
+                    ->sortable()
+                    ->formatStateUsing(fn($state) => $state . '%'),
                 TextColumn::make('deadline')
                     ->date()
                     ->sortable(),

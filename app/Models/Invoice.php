@@ -18,7 +18,7 @@ class Invoice extends Model
 
     protected $casts = [
         'due_date' => 'date',
-        'amount' => 'decimal:2',
+        'amount' => 'decimal:0',
     ];
 
     // generate invoice number
@@ -58,4 +58,16 @@ class Invoice extends Model
     public function isPaid() {
         return $this->status === 'paid';
     }
+
+    protected static function booted(): void
+    {
+        static::saved(function (Invoice $invoice) {
+            $invoice->project->updatePaymentProgress();
+        });
+        
+        static::deleted(function (Invoice $invoice) {
+            $invoice->project->updatePaymentProgress();
+        });
+    }
+
 }

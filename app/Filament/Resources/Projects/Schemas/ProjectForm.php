@@ -26,6 +26,12 @@ class ProjectForm
                     ->maxLength(255),
                 Textarea::make('description')
                     ->columnSpanFull(),
+                // Nilai kontrak
+                TextInput::make('contract_value')
+                    ->numeric()
+                    ->minValue(0)
+                    ->prefix('IDR')
+                    ->required(),
                 Select::make('status')
                     ->options(ProjectStatus::class)
                     ->required()

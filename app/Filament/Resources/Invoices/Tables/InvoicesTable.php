@@ -24,10 +24,12 @@ class InvoicesTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('amount')
-                    ->numeric()
-                    ->money('IDR', true)
                     ->sortable()
-                    ->summarize(Sum::make()),
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0))
+                    ->summarize(Sum::make()
+                        ->label('Total')
+                        ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0,))
+                    ),
                 TextColumn::make('status')
                     ->sortable()
                     ->searchable()

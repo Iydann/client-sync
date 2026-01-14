@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->string('invoice_number', 100)->unique();
-            $table->decimal('amount', 15, 2);
+            $table->decimal('amount', 15, 0);
             $table->string('status', 50)->default('unpaid');
             $table->date('due_date');
             $table->timestamps();

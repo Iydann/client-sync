@@ -16,8 +16,10 @@ return new class extends Migration
             $table->foreignId('client_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('progress')->default('0%');
+            $table->string('progress')->default('0');
             $table->string('status', 50)->default('pending');
+            $table->decimal('contract_value', 15, 0)->default(0);
+            $table->string('payment_progress')->default('0');
             $table->date('deadline')->nullable();
             $table->timestamps();
         });

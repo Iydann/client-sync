@@ -27,14 +27,14 @@ class Milestone extends Model
     }
 
     protected static function booted(): void
-{
-    static::saved(function (Milestone $milestone) {
-        $milestone->project->updateProgress();
-    });
-    
-    static::deleted(function (Milestone $milestone) {
-        $milestone->project->updateProgress();
-    });
-}
+    {
+        static::saved(function (Milestone $milestone) {
+            $milestone->project->updateProgress();
+        });
+        
+        static::deleted(function (Milestone $milestone) {
+            $milestone->project->updateProgress();
+        });
+    }
 }   
 
