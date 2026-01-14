@@ -38,7 +38,12 @@ class MembersRelationManager extends RelationManager
                     ->label('Add Member')
                     ->preloadRecordSelect()
                     ->recordSelectSearchColumns(['name', 'email'])
-                    ->color('primary'),
+                    ->color('primary')
+                    ->recordSelectOptionsQuery(function ($query) {
+                        return $query->whereHas('roles', function ($q) {
+                            $q->where('name', 'developer');
+                        });
+                    }),
             ])
             ->recordActions([
                 DetachAction::make()
@@ -50,7 +55,12 @@ class MembersRelationManager extends RelationManager
                 AttachAction::make()
                     ->label('Add Member')
                     ->preloadRecordSelect()
-                    ->recordSelectSearchColumns(['name', 'email']),
+                    ->recordSelectSearchColumns(['name', 'email'])
+                    ->recordSelectOptionsQuery(function ($query) {
+                        return $query->whereHas('roles', function ($q) {
+                            $q->where('name', 'developer');
+                        });
+                    }),
             ]);
     }
 }

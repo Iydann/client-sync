@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use App\ClientType;
 
 class ClientsTable
 {
@@ -18,6 +19,12 @@ class ClientsTable
                     ->label('Email')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('client_type')
+                    ->label('Client Type')
+                    ->formatStateUsing(fn ($state) => $state?->getLabel() ?? $state?->value)
+                    ->sortable()
+                    ->searchable()
+                    ->badge(),
                 TextColumn::make('company_name')
                     ->sortable()
                     ->searchable(),

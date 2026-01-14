@@ -50,6 +50,9 @@ class InvoicesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+
+            // ->defaultSort('invoice_number', 'desc') 
+
             ->filters([
                 //
             ])
