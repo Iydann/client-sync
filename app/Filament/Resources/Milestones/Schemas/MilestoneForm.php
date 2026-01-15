@@ -6,6 +6,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\FileUpload;
 
 class MilestoneForm
 {
@@ -28,6 +29,8 @@ class MilestoneForm
                 TextInput::make('order')
                     ->numeric()
                     ->default(0),
+                FileUpload::make('attachment')
+                    ->label('Attachment'),
             ]);
     }
 }
