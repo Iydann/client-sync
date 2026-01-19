@@ -26,7 +26,7 @@ class InvoiceResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = "Project Management";
     protected static ?int $navigationSort = 3;
     
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::Banknotes;
 
     public static function getEloquentQuery(): Builder
     {
