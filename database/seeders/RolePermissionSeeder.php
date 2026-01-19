@@ -29,18 +29,22 @@ class RolePermissionSeeder extends Seeder
         }
         
         // Admin - has full access to all resources except Role management
-        $adminPermissions = Permission::where('name', 'not like', '%Role%')
+        $adminPermissions = Permission::where('name', 'not like', '%role%')
+            ->where('name', 'not like', '%shield%')
             ->pluck('name');
         
         if ($adminPermissions->isNotEmpty()) {
             $adminRole->syncPermissions($adminPermissions);
         }
 
-        // Client - can only view their own data (basic view permissions)
+        // Client - can only view their own projects, milestones, and invoices
+        // ViewAny is needed for sidebar navigation, but Policy will filter to show only their data
         $clientPermissions = [
-            'View:Client',
+            'ViewAny:Project',
             'View:Project', 
+            'ViewAny:Milestone',
             'View:Milestone',
+            'ViewAny:Invoice',
             'View:Invoice',
         ];
         
@@ -56,6 +60,8 @@ class RolePermissionSeeder extends Seeder
             'View:Project',
             'Create:Project',
             'Update:Project',
+            'Delete:Project',
+            'Restore:Project',
             
             // Milestone permissions
             'ViewAny:Milestone',

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Projects\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -16,11 +17,12 @@ class ProjectsTable
     {
         return $table
             ->columns([
-                TextColumn::make('client.company_name')
-                    ->label('Client')
+                TextColumn::make('client.client_name')
+                    ->label('Client name')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('title')
+                    ->label('Project Title')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('progress')
@@ -34,7 +36,7 @@ class ProjectsTable
                 TextColumn::make('contract_value')
                     ->label('Contract Value')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0)),
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0, ',', '.')),
                 TextColumn::make('payment_progress')
                     ->label('Payment Progress')
                     ->sortable()
@@ -55,7 +57,7 @@ class ProjectsTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ViewAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

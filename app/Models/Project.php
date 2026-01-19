@@ -17,6 +17,8 @@ class Project extends Model
         'contract_value',
         'progress',
         'payment_progress',
+        'contract_date',
+        'contract_number',
         'status',
         'deadline',
     ];
@@ -25,6 +27,7 @@ class Project extends Model
         'status' => ProjectStatus::class,
         'deadline' => 'date',
         'contract_value' => 'decimal:0',
+        'contract_date' => 'date',
     ];
 
     public function updateProgress(): void
@@ -53,29 +56,24 @@ class Project extends Model
     }
 
     // Relationships
-    public function client()
-    {
+    public function client() {
         return $this->belongsTo(Client::class);
     }
     
-    public function milestones()
-    {
+    public function milestones() {
         return $this->hasMany(Milestone::class);
     }
     
-    public function invoices()
-    {
+    public function invoices() {
         return $this->hasMany(Invoice::class);
     }
     
-    public function members()
-    {
+    public function members(){
         return $this->belongsToMany(User::class, 'project_members')
             ->withTimestamps();
     }
 
-    protected static function booted(): void
-    {
+    protected static function booted(): void {
         static::updated(function (Project $project) {
             if ($project->wasChanged('contract_value')) {
                 $project->updatePaymentProgress();

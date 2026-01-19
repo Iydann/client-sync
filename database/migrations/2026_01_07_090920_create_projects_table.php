@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('status', 50)->default('pending');
             $table->decimal('contract_value', 15, 0)->default(0);
             $table->string('payment_progress')->default('0');
+            $table->date('contract_date')->nullable();
+            $table->string('contract_number')->nullable();
             $table->date('deadline')->nullable();
             $table->timestamps();
         });

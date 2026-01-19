@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Invoices\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
@@ -25,10 +26,10 @@ class InvoicesTable
                     ->sortable(),
                 TextColumn::make('amount')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0))
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0, ',', '.'))
                     ->summarize(Sum::make()
                         ->label('Total')
-                        ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0,))
+                        ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0, ',', '.'))
                     ),
                 TextColumn::make('status')
                     ->sortable()
@@ -59,7 +60,7 @@ class InvoicesTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ViewAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

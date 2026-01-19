@@ -38,6 +38,15 @@ class UserSeeder extends Seeder
         ]);
         $admin->assignRole($adminRole);
 
+
+        // Developer User
+        $developer = User::create([
+            'name' => 'Rina Wijaya',
+            'email' => 'rina@gmail.com',
+            'password' => Hash::make('password'),
+        ]);
+        $developer->assignRole($developerRole);
+
         // Client Users
         $client1 = User::create([
             'name' => 'Budi Santoso',
@@ -60,12 +69,11 @@ class UserSeeder extends Seeder
         ]);
         $client3->assignRole($clientRole);
 
-        // Developer User
-        $developer = User::create([
-            'name' => 'Rina Wijaya',
-            'email' => 'rina@gmail.com',
+        $client4 = User::create([
+            'name' => 'Dewi Lestari',
+            'email' => 'dewi@example.com',
             'password' => Hash::make('password'),
         ]);
-        $developer->assignRole($developerRole);
+        $client4->assignRole($clientRole);
     }
 }

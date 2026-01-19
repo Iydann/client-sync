@@ -38,23 +38,25 @@ class ClientForm
                     ->columns(2)
                     ->hidden(fn ($operation) => $operation === 'edit'),
                 
-                Section::make('Company Information')
+                Section::make('Client Information')
                     ->schema([
                         Select::make('client_type')
                             ->label('Client Type')
                             ->options(ClientType::class)
                             ->required()
                             ->default(ClientType::Individual->value),
-                        TextInput::make('company_name')
+                        TextInput::make('client_name')
                             ->required()
                             ->maxLength(255),
                         TextInput::make('phone')
                             ->tel()
-                            ->maxLength(20),
+                            ->maxLength(20)
+                            ->columnSpan('full'),
                         Textarea::make('address')
                             ->columnSpanFull(),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpan(fn ($operation) => $operation === 'edit' ? 'full' : 1)
             ]);
     }
 }

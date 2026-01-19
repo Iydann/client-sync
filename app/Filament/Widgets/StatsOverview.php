@@ -18,26 +18,31 @@ class StatsOverview extends StatsOverviewWidget
         // Active Projects (in_progress)
         $activeProjects = Project::where('status', 'in_progress')->count();
         $totalProjects = Project::count();
+
+        $totalContractedValue = Project::sum('contract_value');
         
-        // total invoices
-        $totalinvoices = Invoice::count();
+        $totalPaidInvoices = Invoice::where('status', 'paid')->sum('amount');
 
         return [
-            Stat::make('Total Projects', $totalProjects)
+            Stat::make('Total Projects', $totalProjects . ' Projects')
                 ->icon('heroicon-o-rectangle-stack')
                 ->color('info'),
 
-            Stat::make('Active Projects', $activeProjects)
+            Stat::make('Active Projects', $activeProjects . ' Projects')
                 ->icon('heroicon-o-briefcase')
                 ->color('success'),
 
-            Stat::make('Total Clients', $totalClients)
+            Stat::make('Total Clients', $totalClients . ' Clients')
                 ->icon('heroicon-o-users')
                 ->color('primary'),
 
-            Stat::make('Total Invoices', $totalinvoices)
-                ->icon('heroicon-o-document-text')
-                ->color('warning'),
+            Stat::make('Total Contracted Value', 'IDR ' . number_format($totalContractedValue, 0, ',', '.'))
+                ->icon('heroicon-o-currency-dollar')
+                ->color('secondary'),
+
+            Stat::make('Total Paid Invoices', 'IDR ' . number_format($totalPaidInvoices, 0, ',', '.'))
+                ->icon('heroicon-o-banknotes')
+                ->color('success'),
         ];
     }
 }

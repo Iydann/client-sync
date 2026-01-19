@@ -16,7 +16,7 @@ class ProjectForm
         return $schema
             ->schema([
                 Select::make('client_id')
-                    ->relationship('client', 'company_name')
+                    ->relationship('client', 'client_name')
                     ->searchable()
                     ->preload()
                     ->required()
@@ -26,7 +26,9 @@ class ProjectForm
                     ->maxLength(255),
                 Textarea::make('description')
                     ->columnSpanFull(),
-                // Nilai kontrak
+                DatePicker::make('contract_date'),
+                TextInput::make('contract_number')
+                    ->maxLength(100),
                 TextInput::make('contract_value')
                     ->numeric()
                     ->minValue(0)

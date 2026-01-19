@@ -20,7 +20,7 @@ class CreateClient extends CreateRecord
         // Create client with user_id
         return static::getModel()::create([
             'user_id' => $user->id,
-            'company_name' => $data['company_name'],
+            'client_name' => $data['client_name'],
             'phone' => $data['phone'] ?? null,
             'address' => $data['address'] ?? null,
         ]);
