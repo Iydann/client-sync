@@ -13,6 +13,7 @@ class InvoiceInfolist
         return $schema->schema([
             Section::make('Invoice Details')
                 ->columns(2)
+                // ->columnSpan('full')
                 ->schema([
                     TextEntry::make('invoice_number')->label('Invoice Number'),
                     TextEntry::make('project.title')->label('Project'),
@@ -22,7 +23,7 @@ class InvoiceInfolist
                     TextEntry::make('created_at')->date(),
                     TextEntry::make('due_date')->date(),
                 ])
-                // ->columnSpan('full')
+                
         ]);
     }
 }

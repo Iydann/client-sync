@@ -16,30 +16,31 @@ class ViewProject extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
+            EditAction::make()
+                ->label('Edit Project')
+                ->icon('heroicon-o-pencil'),
 
             Action::make('uploadAssets')
-                ->label('Upload Assets')
+                ->label('Manage Assets')
                 ->icon('heroicon-o-arrow-up-tray')
                 ->color('primary')
-                ->schema([
+                ->fillForm(fn () => [
+                    'assets' => [],
+                ])
+                ->form([
                     SpatieMediaLibraryFileUpload::make('assets')
+                        ->label('Project Assets')
                         ->collection('project-assets')
                         ->multiple()
-                        ->maxFiles(10)
-                        ->openable()
-                        ->previewable(),
+                        ->maxFiles(20)
+                        ->reorderable()
+                        ->disablePreview()
+                        ->uploadingMessage('Uploading...')
+                        ->helperText('Upload new files, remove or reorder existing ones.'),
                 ])
-                ->action(function (array $data) {
-                    collect($data['assets'] ?? [])
-                        ->each(fn ($file) =>
-                            $this->record->addMedia($file)->toMediaCollection('project-assets')
-                        );
-
-                    $this->record->refresh();
-
+                ->action(function () {
                     Notification::make()
-                        ->title('Assets uploaded')
+                        ->title('Assets updated successfully')
                         ->success()
                         ->send();
                 }),
