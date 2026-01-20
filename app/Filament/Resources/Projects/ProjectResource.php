@@ -9,6 +9,7 @@ use App\Filament\Resources\Projects\Pages\ViewProject;
 use App\Filament\Resources\Projects\Schemas\ProjectForm;
 use App\Filament\Resources\Projects\Tables\ProjectsTable;
 use App\Filament\Resources\Projects\RelationManagers;
+use App\Filament\Schemas\Components\ProjectInfolist;
 use App\Models\Project;
 use App\Models\User;
 use BackedEnum;
@@ -52,6 +53,11 @@ class ProjectResource extends Resource
     public static function table(Table $table): Table
     {
         return ProjectsTable::configure($table);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return ProjectInfolist::configure($schema);
     }
 
     public static function getRelations(): array

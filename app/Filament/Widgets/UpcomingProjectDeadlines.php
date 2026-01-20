@@ -34,7 +34,7 @@ class UpcomingProjectDeadlines extends BaseWidget
                     ->searchable()
                     ->sortable(),
                 
-                Tables\Columns\TextColumn::make('client.name')
+                Tables\Columns\TextColumn::make('client.client_name')
                     ->label('Client')
                     ->searchable()
                     ->sortable(),

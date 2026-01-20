@@ -9,6 +9,8 @@ use App\Filament\Resources\Clients\Pages\ListClients;
 use App\Filament\Resources\Clients\Schemas\ClientForm;
 use App\Filament\Resources\Clients\Tables\ClientsTable;
 use App\Filament\Resources\Clients\RelationManagers;
+use App\Filament\Resources\Clients\Pages\ViewClient;
+use App\Filament\Schemas\Components\ClientInfolist;
 use App\Models\Client;
 use UnitEnum;
 use BackedEnum;
@@ -35,6 +37,11 @@ class ClientResource extends Resource
         return ClientsTable::configure($table);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return ClientInfolist::configure($schema);
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -47,6 +54,7 @@ class ClientResource extends Resource
         return [
             'index' => ListClients::route('/'),
             'create' => CreateClient::route('/create'),
+            'view' => ViewClient::route('/{record}'),
             'edit' => EditClient::route('/{record}/edit'),
         ];
     }

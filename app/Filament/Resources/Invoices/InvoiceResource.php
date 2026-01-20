@@ -8,6 +8,7 @@ use App\Filament\Resources\Invoices\Pages\ListInvoices;
 use App\Filament\Resources\Invoices\Pages\ViewInvoice;
 use App\Filament\Resources\Invoices\Schemas\InvoiceForm;
 use App\Filament\Resources\Invoices\Tables\InvoicesTable;
+use App\Filament\Schemas\Components\InvoiceInfolist;
 use App\Models\Invoice;
 use App\Models\User;
 use BackedEnum;
@@ -53,6 +54,11 @@ class InvoiceResource extends Resource
     public static function table(Table $table): Table
     {
         return InvoicesTable::configure($table);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return InvoiceInfolist::configure($schema);
     }
 
     public static function getRelations(): array
