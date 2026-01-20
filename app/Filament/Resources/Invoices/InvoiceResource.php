@@ -19,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Providers\Filament\AdminPanelProvider;
 
 class InvoiceResource extends Resource
 {
@@ -26,8 +27,13 @@ class InvoiceResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = "Project Management";
     protected static ?int $navigationSort = 3;
-    
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Banknotes;
+
+    public static function getNavigationGroup(): string
+    {
+        return AdminPanelProvider::getNavigationGroupName();
+    }
 
     public static function getEloquentQuery(): Builder
     {

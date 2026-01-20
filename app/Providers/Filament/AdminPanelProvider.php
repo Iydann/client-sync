@@ -19,11 +19,28 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\Support\Facades\Auth;
 
 class AdminPanelProvider extends PanelProvider
 {
+    /**
+     * Get the navigation group name based on user role
+     */
+    public static function getNavigationGroupName(): string
+    {
+        if (!Auth::check()) {
+            return "Project Management";
+        }
+        
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        return $user?->hasRole('client') ? "Project Portal" : "Project Management";
+    }
+
     public function panel(Panel $panel): Panel
     {
+        $groupName = self::getNavigationGroupName();
+        
         return $panel
             ->default()
             ->id('admin')
@@ -33,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Indigo,
             ])
             ->navigationGroups([
-                "Project Management",
+                $groupName,
                 "Settings",
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
