@@ -17,7 +17,7 @@ class ViewProject extends ViewRecord
     {
         return [
             EditAction::make()
-                ->label('Edit Project')
+                ->label('Edit Details')
                 ->icon('heroicon-o-pencil'),
 
             Action::make('uploadAssets')
