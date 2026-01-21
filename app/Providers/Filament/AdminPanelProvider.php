@@ -13,6 +13,7 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -20,6 +21,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\HtmlString;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -31,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
         if (!Auth::check()) {
             return "Project Management";
         }
-        
+
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
         return $user?->hasRole('client') ? "Project Portal" : "Project Management";
@@ -40,7 +42,7 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         $groupName = self::getNavigationGroupName();
-        
+
         return $panel
             ->default()
             ->id('admin')
@@ -53,7 +55,15 @@ class AdminPanelProvider extends PanelProvider
                 $groupName,
                 "Settings",
             ])
-            // ->renderHook()
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+                fn(): HtmlString => new HtmlString(
+                    view('filament.partials.year-filter', [
+                        'currentYear' => request()->integer('year', now()->year),
+                        'years' => range(now()->year, now()->year - 5),
+                    ])->render()
+                )
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
