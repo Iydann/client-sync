@@ -36,15 +36,37 @@ class StatsOverview extends StatsOverviewWidget
     {
 
         // Total Clients filtered by created_at year
-        $totalClients = Client::whereYear('created_at', $this->year)->count();
+        $clientsQuery = Client::query();
+        if ($this->year !== 'all') {
+            $clientsQuery->whereYear('created_at', $this->year);
+        }
+        $totalClients = $clientsQuery->count();
 
         // Filter Project by contract_date
-        $activeProjects = Project::where('status', 'in_progress')->whereYear('contract_date', $this->year)->count();
-        $totalProjects = Project::whereYear('contract_date', $this->year)->count();
-        $totalContractedValue = Project::whereYear('contract_date', $this->year)->sum('contract_value');
+        $activeProjectsQuery = Project::where('status', 'in_progress');
+        if ($this->year !== 'all') {
+            $activeProjectsQuery->whereYear('contract_date', $this->year);
+        }
+        $activeProjects = $activeProjectsQuery->count();
+
+        $totalProjectsQuery = Project::query();
+        if ($this->year !== 'all') {
+            $totalProjectsQuery->whereYear('contract_date', $this->year);
+        }
+        $totalProjects = $totalProjectsQuery->count();
+
+        $contractedValueQuery = Project::query();
+        if ($this->year !== 'all') {
+            $contractedValueQuery->whereYear('contract_date', $this->year);
+        }
+        $totalContractedValue = $contractedValueQuery->sum('contract_value');
 
         // Filter Invoice by contract_date jika ada, atau tetap updated_at
-        $totalPaidInvoices = Invoice::where('status', 'paid')->whereYear('updated_at', $this->year)->sum('amount');
+        $paidInvoicesQuery = Invoice::where('status', 'paid');
+        if ($this->year !== 'all') {
+            $paidInvoicesQuery->whereYear('updated_at', $this->year);
+        }
+        $totalPaidInvoices = $paidInvoicesQuery->sum('amount');
         return [
             Stat::make('Total Projects', $totalProjects . ' Projects')
                 ->description('All projects in the system')

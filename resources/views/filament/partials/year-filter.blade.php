@@ -9,7 +9,8 @@
     }">
     <select name="year"
         x-model="year"
-        class="fi-input block w-28 rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500">
+        class="fi-input block w-32 rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500">
+        <option value="all">All Years</option>
         @foreach ($years as $year)
         <option value="{{ $year }}">
             {{ $year }}
