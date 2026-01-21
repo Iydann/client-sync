@@ -24,7 +24,7 @@ class ViewProject extends ViewRecord
                 ->label('Manage Assets')
                 ->icon('heroicon-o-arrow-up-tray')
                 ->color('primary')
-                ->fillForm(fn () => [
+                ->fillForm(fn() => [
                     'assets' => [],
                 ])
                 ->form([
@@ -34,7 +34,9 @@ class ViewProject extends ViewRecord
                         ->multiple()
                         ->maxFiles(20)
                         ->reorderable()
-                        ->disablePreview()
+                        ->downloadable()
+                        ->openable()
+                        ->previewable(false)
                         ->uploadingMessage('Uploading...')
                         ->helperText('Upload new files, remove or reorder existing ones.'),
                 ])
