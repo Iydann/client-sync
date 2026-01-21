@@ -6,8 +6,7 @@
                 Livewire.dispatch('yearChanged', value)
             })
         }
-    }"
->
+    }">
     <select name="year"
         x-model="year"
         class="fi-input block w-28 rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500">

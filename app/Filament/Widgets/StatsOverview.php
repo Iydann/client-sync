@@ -26,7 +26,7 @@ class StatsOverview extends StatsOverviewWidget
     {
         $this->year = $year;
     }
-    
+
     protected function shouldCache(): bool
     {
         return false;
@@ -34,7 +34,7 @@ class StatsOverview extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        
+
         // Total Clients filtered by created_at year
         $totalClients = Client::whereYear('created_at', $this->year)->count();
 
