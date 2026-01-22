@@ -53,6 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 $groupName,
+                "Analytics",
                 "Settings",
             ])
             ->renderHook(
