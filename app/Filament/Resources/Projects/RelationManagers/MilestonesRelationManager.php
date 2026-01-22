@@ -11,6 +11,8 @@ use Filament\Forms;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Illuminate\Support\Facades\Auth;
+use App\Models\UserContribution;
 
 class MilestonesRelationManager extends RelationManager
 {
@@ -93,18 +95,115 @@ class MilestonesRelationManager extends RelationManager
             ->defaultSort('order')
             ->headerActions([
                 CreateAction::make()
-                    ->schema(fn () => $this->getCreateFormSchema()),
+                    ->schema(fn () => $this->getCreateFormSchema())
+                    ->after(function ($record) {
+                        $user = \Illuminate\Support\Facades\Auth::user();
+                        if ($user) {
+                            \App\Models\UserContribution::create([
+                                'user_id' => $user->id,
+                                'type' => 'create_milestone',
+                                'value' => 1,
+                                'year' => now()->year,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }),
             ])
             ->recordActions([
                 EditAction::make()
-                    ->schema(fn () => $this->getEditFormSchema()),
-                DeleteAction::make(),
+                    ->schema(fn () => $this->getEditFormSchema())
+                    ->after(function ($record) {
+                        $user = \Illuminate\Support\Facades\Auth::user();
+                        if ($user) {
+                            \App\Models\UserContribution::create([
+                                'user_id' => $user->id,
+                                'type' => 'update_milestone',
+                                'value' => 1,
+                                'year' => now()->year,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }),
+                DeleteAction::make()
+                    ->after(function ($record) {
+                        $user = \Illuminate\Support\Facades\Auth::user();
+                        if ($user) {
+                            \App\Models\UserContribution::create([
+                                'user_id' => $user->id,
+                                'type' => 'delete_milestone',
+                                'value' => 1,
+                                'year' => now()->year,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }),
             ])
             ->emptyStateHeading('No milestones')
             ->emptyStateDescription('Add milestones to track project progress.')
             ->emptyStateActions([
                 CreateAction::make()
-                    ->schema(fn () => $this->getCreateFormSchema()),
+                    ->schema(fn () => $this->getCreateFormSchema())
+                    ->after(function ($record) {
+                        $user = \Illuminate\Support\Facades\Auth::user();
+                        if ($user) {
+                            \App\Models\UserContribution::create([
+                                'user_id' => $user->id,
+                                'type' => 'create_milestone',
+                                'value' => 1,
+                                'year' => now()->year,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }),
             ]);
+    }
+
+    public function afterCreate($record): void
+    {
+        $user = Auth::user();
+        if ($user) {
+            UserContribution::create([
+                'user_id' => $user->id,
+                'type' => 'create_milestone',
+                'value' => 1,
+                'year' => now()->year,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    public function afterEdit($record): void
+    {
+        $user = Auth::user();
+        if ($user) {
+            UserContribution::create([
+                'user_id' => $user->id,
+                'type' => 'update_milestone',
+                'value' => 1,
+                'year' => now()->year,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    public function afterDelete($record): void
+    {
+        $user = Auth::user();
+        if ($user) {
+            UserContribution::create([
+                'user_id' => $user->id,
+                'type' => 'delete_milestone',
+                'value' => 1,
+                'year' => now()->year,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 }
