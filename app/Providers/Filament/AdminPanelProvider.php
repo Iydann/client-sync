@@ -58,7 +58,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
                 fn(): HtmlString => new HtmlString(
-                    view('filament.partials.year-filter', [
+                    view('filament.pages.year-filter', [
                         'currentYear' => request()->integer('year', now()->year),
                         'years' => range(now()->year, now()->year - 5),
                     ])->render()
