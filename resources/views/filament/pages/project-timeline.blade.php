@@ -6,7 +6,7 @@
                     <span>Project Timeline</span>
                     <div class="flex items-center gap-2 text-sm text-gray-500">
                         @svg('heroicon-o-cursor-arrow-rays', 'w-4 h-4')
-                        <span>Click for information</span>
+                        <span>Hover for information</span>
                     </div>
                 </div>
             </x-slot>
@@ -129,7 +129,7 @@
 
                 gantt.config.date_format = "%Y-%m-%d"; 
                 gantt.config.readonly = true;
-                gantt.config.bar_height = 20; 
+                gantt.config.bar_height = 25; 
                 gantt.config.row_height = 35;
                 
                 gantt.config.scales = [
