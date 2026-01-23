@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('payment_progress')->default('0');
             $table->date('contract_date')->nullable();
             $table->string('contract_number')->nullable();
+            $table->date('start_date')->nullable();
             $table->date('deadline')->nullable();
             $table->timestamps();
         });

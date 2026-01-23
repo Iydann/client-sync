@@ -37,14 +37,10 @@ class ProjectInfolist
                             ->placeholder('-'),
                         TextEntry::make('contract_date')
                             ->date(),
+                        TextEntry::make('start_date')
+                            ->date(),
                         TextEntry::make('deadline')
                             ->date(),
-                        TextEntry::make('created_at')
-                            ->label('Created')
-                            ->dateTime(),
-                        TextEntry::make('updated_at')
-                            ->label('Updated')
-                            ->dateTime(),
                         TextEntry::make('description')
                             ->label('Description')
                             ->columnSpanFull()

@@ -22,11 +22,13 @@ class Project extends Model implements HasMedia
         'contract_date',
         'contract_number',
         'status',
+        'start_date',
         'deadline',
     ];
 
     protected $casts = [
         'status' => ProjectStatus::class,
+        'start_date' => 'date',
         'deadline' => 'date',
         'contract_value' => 'decimal:0',
         'contract_date' => 'date',

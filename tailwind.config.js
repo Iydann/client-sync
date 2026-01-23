@@ -5,6 +5,7 @@ module.exports = {
         './resources/js/**/*.js',
         './resources/css/**/*.css',
         './resources/views/filament/pages/year-filter.blade.php',
+        './resources/views/filament/**/*.blade.php',
     ],
 
     // --- TAMBAHKAN BAGIAN SAFELIST INI ---

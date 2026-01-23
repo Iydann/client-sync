@@ -22,6 +22,7 @@ class ProjectSeeder extends Seeder
             'contract_number' => 'MB-001',
             'contract_value' => 30000000,
             'status' => 'in_progress',
+            'start_date' => now(),
             'deadline' => now()->addDays(30),
             'payment_progress' => 50,
         ]);
@@ -34,6 +35,7 @@ class ProjectSeeder extends Seeder
             'contract_date' => now()->addDays(120),
             'contract_number' => 'SJ-012',
             'contract_value' => 25000000,
+            'start_date' => now(),
             'deadline' => now()->addDays(60),
             'payment_progress' => 0,
         ]);
@@ -47,6 +49,7 @@ class ProjectSeeder extends Seeder
             'contract_date' => now()->addDays(180),
             'contract_number' => 'BM-023',
             'contract_value' => 50000000,
+            'start_date' => now()->subDays(30),
             'deadline' => now()->addDays(90),
             'payment_progress' => 60,
         ]);
@@ -60,6 +63,7 @@ class ProjectSeeder extends Seeder
             'contract_date' => now()->addMonths(3),
             'contract_number' => 'SA-034',
             'contract_value' => 35000000,
+            'start_date' => now()->subMonths(2),
             'deadline' => now()->subDays(10),
             'payment_progress' => 100,
         ]);
@@ -72,6 +76,7 @@ class ProjectSeeder extends Seeder
             'contract_date' => now()->addDays(90),
             'contract_number' => 'DA-045',
             'contract_value' => 20000000,
+            'start_date' => now()->subDays(20),
             'deadline' => now()->addDays(45),
             'payment_progress' => 0,
         ]);
