@@ -38,6 +38,7 @@ class ProjectForm
                     ->options(ProjectStatus::class)
                     ->required()
                     ->default('pending'),
+                DatePicker::make('start_date'),
                 DatePicker::make('deadline'),
             ]);
     }
