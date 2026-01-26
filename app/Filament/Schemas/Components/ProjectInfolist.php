@@ -26,17 +26,17 @@ class ProjectInfolist
                         TextEntry::make('progress')
                             ->label('Progress')
                             ->formatStateUsing(fn ($state) => $state . '%'),
-                        TextEntry::make('payment_progress')
-                            ->label('Payment Progress')
-                            ->formatStateUsing(fn ($state) => $state . '%'),
-                        TextEntry::make('contract_value')
-                            ->label('Contract Value')
-                            ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0, ',', '.')),
                         TextEntry::make('contract_number')
                             ->label('Contract Number')
                             ->placeholder('-'),
                         TextEntry::make('contract_date')
                             ->date(),
+                        TextEntry::make('contract_value')
+                            ->label('Contract Value')
+                            ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0, ',', '.')),
+                        TextEntry::make('payment_progress')
+                            ->label('Payment Progress')
+                            ->formatStateUsing(fn ($state) => $state . '%'),
                         TextEntry::make('start_date')
                             ->date(),
                         TextEntry::make('deadline')

@@ -1,5 +1,4 @@
-<x-filament::page>
-    @vite(['resources/css/app.css'])
+<x-filament-panels::page>
     <div class="space-y-6">
         @foreach ($users as $user)
             @include('filament.pages.partials.contributions-heatmap', [
@@ -8,4 +7,4 @@
             ])
         @endforeach
     </div>
-</x-filament::page>
+</x-filament-panels::page>
