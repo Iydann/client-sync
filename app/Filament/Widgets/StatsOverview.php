@@ -52,6 +52,10 @@ class StatsOverview extends StatsOverviewWidget
         $activeProjects = Project::where('status', 'in_progress')
             ->when($this->year !== 'all', fn($q) => $q->whereYear('contract_date', $this->year))
             ->count();
+        $inactiveProjects = $totalProjects - $activeProjects;
+
+        $totalIndividualClients = $this->applyDateFilter(Client::where('client_type', 'individual'), 'created_at')->count();
+        $totalOrganizationClients = $this->applyDateFilter(Client::where('client_type', 'organization'), 'created_at')->count();
 
         // 2. Hitung Keuangan
         $totalContractedValue = $this->applyDateFilter(Project::query(), 'contract_date')->sum('contract_value');
@@ -65,8 +69,23 @@ class StatsOverview extends StatsOverviewWidget
         // Formatter Mata Uang
         $formatRp = fn($num) => 'IDR ' . number_format($num, 0, ',', '.');
 
-        // Deskripsi Breakdown Keuangan
-        // Format: Paid: xxx | Unpaid: xxx | Uninvoiced: xxx
+
+        $projectDescription = new HtmlString(sprintf(
+            '<div style="margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6;">
+                <span class="text-info-600">Active Projects: %s</span><br>
+                <span class="text-info-600">Inactive Projects: %s</span>
+            </div>',
+            number_format($activeProjects, 0, ',', '.'),
+            number_format($inactiveProjects, 0, ',', '.')
+        ));
+        $clientDescription = new HtmlString(sprintf(
+            '<div style="margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6;">
+                <span class="text-primary-600">Individual: %s</span><br>
+                <span class="text-primary-600">Organization: %s</span>
+            </div>',
+            number_format($totalIndividualClients, 0, ',', '.'),
+            number_format($totalOrganizationClients, 0, ',', '.')
+        ));
         $financeDescription = new HtmlString(sprintf(
             '<div style="margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6;">
                 <span class="text-success-600">Paid: %s</span><br>
@@ -81,15 +100,17 @@ class StatsOverview extends StatsOverviewWidget
         return [
             // Card 1: Projects
             Stat::make('Total Projects', $totalProjects)
-                ->description("Active: $activeProjects")
+                ->description($projectDescription)
                 ->chart([$totalProjects, $activeProjects]) 
                 ->icon('heroicon-o-rectangle-stack')
                 ->color('info'),
 
             // Card 2: Clients
             Stat::make('Total Clients', $totalClients)
+                ->description($clientDescription)
                 ->icon('heroicon-o-users')
-                ->color('primary'),
+                ->color('primary')
+                ->chart([$totalIndividualClients, $totalOrganizationClients]),
 
             // Card 3: Financial Summary (ALL IN ONE)
             Stat::make('Total Contract Value', $formatRp($totalContractedValue))
