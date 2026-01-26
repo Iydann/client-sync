@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use Filament\Pages\Page;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Livewire\Attributes\On;
 
 class UserContributions extends Page
 {
@@ -15,26 +16,45 @@ class UserContributions extends Page
 
     protected string $view = 'filament.pages.user-contributions';
 
+    public $year;
+
+    public function mount()
+    {
+        $this->year = request()->integer('year', now()->year);
+    }
+
+    #[On('yearChanged')]
+    public function updateYear($year)
+    {
+        $this->year = $year;
+        // Livewire akan otomatis me-render ulang view karena properti berubah
+    }
+
     protected function getViewData(): array
     {
-        $from = now()->subMonths(3)->startOfDay();
-        $to   = now()->endOfDay();
+        // Logika penentuan tanggal berdasarkan filter tahun
+        if ($this->year === 'all') {
+            $from = now()->subYear()->startOfDay(); // Default view jika All, misal 1 tahun terakhir
+            $to   = now()->endOfDay();
+        } else {
+            $from = Carbon::createFromDate($this->year, 1, 1)->startOfDay();
+            $to   = Carbon::createFromDate($this->year, 12, 31)->endOfDay();
+        }
 
         $users = User::query()->get();
-
         $stats = [];
 
         foreach ($users as $user) {
-            // contoh kontribusi → ganti sesuai model aslimu
-            $contributions = $user->contributions()
+            $contributions = $user->contributions() // Pastikan relasi ini ada di Model User
                 ->whereBetween('created_at', [$from, $to])
                 ->get()
                 ->groupBy(fn ($c) => $c->created_at->toDateString());
 
+            // Gunakan DatePeriod agar heatmap tetap terisi tanggalnya meski kosong datanya
             $period = new \DatePeriod(
                 $from,
                 new \DateInterval('P1D'),
-                $to
+                $to->copy()->addDay() // Tambah 1 hari agar tanggal terakhir inclusive
             );
 
             $heatmap = [];
@@ -43,6 +63,8 @@ class UserContributions extends Page
                 $key = $date->format('Y-m-d');
                 $count = isset($contributions[$key]) ? $contributions[$key]->count() : 0;
 
+                // Batasi jumlah hari jika 'all' agar UI tidak meledak, 
+                // atau biarkan jika library heatmap Anda bisa handle scroll.
                 $heatmap[] = [
                     'date' => $key,
                     'count' => $count,

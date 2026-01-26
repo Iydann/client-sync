@@ -22,6 +22,8 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
+use App\Models\Project; 
+use Illuminate\Support\Carbon;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -62,7 +64,7 @@ class AdminPanelProvider extends PanelProvider
                 fn(): HtmlString => new HtmlString(
                     view('filament.pages.year-filter', [
                         'currentYear' => request()->integer('year', now()->year),
-                        'years' => range(now()->year, now()->year - 5),
+                        'years' => $this->getProjectYears(), // Panggil fungsi helper
                     ])->render()
                 )
             )
@@ -94,5 +96,28 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    protected function getProjectYears(): array
+    {
+        try {
+            // Cek data project paling lama berdasarkan contract_date
+            $minDate = Project::min('contract_date');
+            
+            $minYear = $minDate ? Carbon::parse($minDate)->year : now()->year;
+            $maxYear = now()->year;
+
+            // Pastikan minYear tidak melebihi maxYear (jika data kotor masa depan)
+            if ($minYear > $maxYear) {
+                $minYear = $maxYear;
+            }
+
+            // Return array range dari Max ke Min (Descending)
+            return range($maxYear, $minYear);
+
+        } catch (\Exception $e) {
+            // Fallback jika tabel belum ada (misal saat migrasi awal)
+            return range(now()->year, now()->year);
+        }
     }
 }

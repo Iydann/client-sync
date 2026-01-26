@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Project;
 use Carbon\Carbon;
 use Filament\Pages\Page;
+use Livewire\Attributes\On; // Pastikan ini di-import
 
 class ProjectTimeline extends Page
 {
@@ -12,15 +13,36 @@ class ProjectTimeline extends Page
     protected static ?string $title = 'Project Timeline';
     protected string $view = 'filament.pages.project-timeline';
 
+    // Properti public agar bisa diakses view
+    public $year;
+
+    public function mount()
+    {
+        $this->year = request()->integer('year', now()->year);
+    }
+
+    // Listener Wajib: Menangkap event dari Global Filter
+    #[On('yearChanged')]
+    public function updateYear($year)
+    {
+        $this->year = $year;
+        // Tidak perlu $this->js(), kita akan handle via Alpine di Blade
+    }
+
     public function getViewData(): array
     {
-        $projects = Project::query()
+        // 1. Query Data
+        $query = Project::query()
             ->whereNotNull('start_date')
-            ->whereNotNull('deadline')
-            ->get()
-            ->map(function (Project $project) {
-                return $this->transformProjectData($project);
-            })
+            ->whereNotNull('deadline');
+
+        // 2. Filter Tahun
+        if ($this->year !== 'all') {
+            $query->whereYear('contract_date', $this->year);
+        }
+
+        $projects = $query->get()
+            ->map(fn (Project $project) => $this->transformProjectData($project))
             ->filter()
             ->values();
 
@@ -29,6 +51,7 @@ class ProjectTimeline extends Page
                 'data' => $projects->toArray(),
                 'links' => [] 
             ],
+            'currentFilterYear' => $this->year, 
         ];
     }
 
@@ -38,10 +61,7 @@ class ProjectTimeline extends Page
             $start = Carbon::parse($project->start_date);
             $end = Carbon::parse($project->deadline);
             
-            // Normalisasi status ke string (antisipasi jika pakai Enum)
             $status = $project->status->value ?? $project->status ?? 'pending';
-            
-            // Format teks status untuk tampilan (misal: in_progress -> In Progress)
             $statusLabel = ucwords(str_replace('_', ' ', $status));
 
             return [
@@ -51,8 +71,6 @@ class ProjectTimeline extends Page
                 'duration' => max(1, $start->diffInDays($end)),
                 'progress' => ($project->progress ?? 0) / 100,
                 'status' => $statusLabel,
-                
-                // WARNA: Murni mengikuti status database
                 'color' => $this->getStatusColor($status),
                 'textColor' => '#ffffff'
             ];
@@ -61,17 +79,14 @@ class ProjectTimeline extends Page
         }
     }
 
-    /**
-     * Logika Warna Strict (Hanya berdasarkan Status)
-     */
     private function getStatusColor(string $status): string
     {
         return match (strtolower($status)) {
-            'completed', 'done', 'finished' => '#10b981', // Green
-            'pending', 'draft'              => '#9ca3af', // Gray
-            'cancelled'                     => '#ef4444', // Red
-            'in_progress'                   => '#3b82f6', // Blue (Tetap Biru walau telat)
-            default                         => '#3b82f6', // Default Blue
+            'completed', 'done', 'finished' => '#10b981',
+            'pending', 'draft'              => '#9ca3af',
+            'cancelled'                     => '#ef4444',
+            'in_progress'                   => '#3b82f6',
+            default                         => '#3b82f6',
         };
     }
 }
