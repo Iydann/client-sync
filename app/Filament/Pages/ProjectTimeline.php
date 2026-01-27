@@ -6,7 +6,8 @@ use App\Models\Project;
 use Carbon\Carbon;
 use Filament\Pages\Page;
 use Livewire\Attributes\On;
-use App\Filament\Traits\HasGlobalYearFilter; 
+use App\Filament\Traits\HasGlobalYearFilter;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectTimeline extends Page
 {
@@ -19,11 +20,23 @@ class ProjectTimeline extends Page
     public function getViewData(): array
     {
         $year = session('project_year', now()->year);
+        $user = Auth::user();
 
         $query = Project::query()
             ->whereNotNull('start_date')
             ->whereNotNull('deadline');
 
+        if ($user && $user->hasRole('client')) {
+            $clientId = $user->client?->id;
+            
+            if ($clientId) {
+                $query->where('client_id', $clientId);
+            } else {
+                $query->whereNull('id'); 
+            }
+        }
+
+        // 3. Filter Tahun Global
         if ($year !== 'all') {
             $query->whereYear('contract_date', $year);
         }
