@@ -12,6 +12,8 @@ use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
 use App\Filament\Traits\HasGlobalYearFilter;
+use Illuminate\Support\Facades\Auth;
+
 
 class ClientInsights extends Page implements HasTable
 {
@@ -23,8 +25,13 @@ class ClientInsights extends Page implements HasTable
     protected static ?string $title = 'Client Insights Overview';
     protected static string|\UnitEnum|null $navigationGroup = 'Analytics';
     protected static ?int $navigationSort = 2;
-
     protected string $view = 'filament.pages.client-insights';
+
+    // Sembunyikan jika user memiliki role 'client'
+    public static function canAccess(): bool
+    {
+        return !Auth::user()?->hasRole('client');
+    }
 
     public $year;
 

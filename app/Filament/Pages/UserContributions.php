@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\On;
 use App\Filament\Traits\HasGlobalYearFilter; 
+use Illuminate\Support\Facades\Auth;
 
 class UserContributions extends Page
 {
@@ -16,6 +17,11 @@ class UserContributions extends Page
     protected static ?int $navigationSort = 10;
 
     protected string $view = 'filament.pages.user-contributions';
+
+    public static function canAccess(): bool
+    {
+        return !Auth::user()?->hasRole('client');
+    }
 
     use HasGlobalYearFilter;
 
