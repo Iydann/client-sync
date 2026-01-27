@@ -4,12 +4,18 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\ChartWidget;
 use App\Models\Project;
+use Illuminate\Support\Facades\Auth;
 
 class ContractValuePerYearChart extends ChartWidget
 {
     protected ?string $heading = 'Total Contracted Value per Year';
 
     protected static ?int $sort = 2;
+
+    public static function canView(): bool
+    {
+        return ! Auth::user()?->hasRole('client');
+    }
 
     protected function getData(): array
     {
@@ -33,6 +39,6 @@ class ContractValuePerYearChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'bar'; // bisa: line | bar | area
+        return 'bar'; 
     }
 }

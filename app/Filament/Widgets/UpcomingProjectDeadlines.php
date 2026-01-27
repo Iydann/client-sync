@@ -7,6 +7,7 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth; // Tambahan Import
 
 class UpcomingProjectDeadlines extends BaseWidget
 {
@@ -26,6 +27,9 @@ class UpcomingProjectDeadlines extends BaseWidget
                         now()->addDays(30)->endOfDay()
                     ])
                     ->where('status', '!=', 'completed')
+                    ->when(Auth::user()?->hasRole('client'), function ($q) {
+                        $q->where('client_id', Auth::user()->client?->id);
+                    })
                     ->orderBy('deadline', 'asc')
             )
             ->columns([
