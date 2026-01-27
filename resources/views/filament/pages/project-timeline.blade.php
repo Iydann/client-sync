@@ -50,7 +50,7 @@
 
                 // --- PENGATURAN GRID (KIRI) AGAR TIDAK TERPOTONG ---
                 // Total Width = 220 (Name) + 80 (Status) + Padding
-                gantt.config.grid_width = 320; 
+                gantt.config.grid_width = 360; 
 
                 gantt.config.scales = [
                     { unit: 'year', step: 1, format: '%Y' }, // Baris Atas: Tahun (2026)
@@ -59,7 +59,7 @@
 
                 gantt.config.columns = [
                     { name: 'text', label: 'Project Name', width: 220, tree: true, resize: true },
-                    { name: 'status', label: 'Status', width: 80, align: 'center' },
+                    { name: 'status', label: 'Status', width: 120, align: 'center' },
                 ];
 
                 // 3. TOOLTIP
