@@ -30,15 +30,16 @@ class UserContributions extends Page
         $year = session('project_year', now()->year);
 
         if ($year === 'all') {
-            $from = now()->subYear()->startOfDay(); // Default view jika All (1 tahun terakhir)
+            $from = now()->subYear()->startOfDay(); 
             $to   = now()->endOfDay();
         } else {
             $yearInt = (int) $year;
             $from = Carbon::createFromDate($yearInt, 1, 1)->startOfDay();
             $to   = Carbon::createFromDate($yearInt, 12, 31)->endOfDay();
         }
+        
+        $users = User::role('developer')->get(); 
 
-        $users = User::query()->get();
         $stats = [];
 
         foreach ($users as $user) {
