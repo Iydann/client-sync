@@ -22,23 +22,41 @@ class ProjectTimeline extends Page
         $year = session('project_year', now()->year);
         $user = Auth::user();
 
+        // 1. Base Query
         $query = Project::query()
             ->whereNotNull('start_date')
             ->whereNotNull('deadline');
 
+        // 2. Filter Client-Specific (KEAMANAN DATA)
         if ($user && $user->hasRole('client')) {
             $clientId = $user->client?->id;
             
             if ($clientId) {
                 $query->where('client_id', $clientId);
             } else {
+                // Jika user client tapi tidak punya data client, kosongkan hasil (safety)
                 $query->whereNull('id'); 
             }
         }
 
-        // 3. Filter Tahun Global
+        // 3. Filter Tahun (LOGIKA BARU: OVERLAP / IRISAN)
+        // Menangani kasus proyek lintas tahun (misal: Mulai 2025, Selesai 2026)
+        // agar muncul di filter 2025 MAUPUN 2026.
         if ($year !== 'all') {
-            $query->whereYear('contract_date', $year);
+            // Konversi tahun ke tanggal awal & akhir
+            $startOfYear = Carbon::createFromDate($year, 1, 1)->startOfDay();
+            $endOfYear   = Carbon::createFromDate($year, 12, 31)->endOfDay();
+
+            // Ambil project yang memenuhi SALAH SATU syarat:
+            $query->where(function ($q) use ($startOfYear, $endOfYear) {
+                $q->whereBetween('start_date', [$startOfYear, $endOfYear]) // 1. Mulai di tahun ini
+                  ->orWhereBetween('deadline', [$startOfYear, $endOfYear]) // 2. Selesai di tahun ini
+                  ->orWhere(function ($sub) use ($startOfYear, $endOfYear) {
+                      // 3. Mulai SEBELUM tahun ini DAN Selesai SETELAH tahun ini (Melintasi penuh)
+                      $sub->where('start_date', '<', $startOfYear)
+                          ->where('deadline', '>', $endOfYear);
+                  });
+            });
         }
 
         $projects = $query->get()
@@ -61,10 +79,12 @@ class ProjectTimeline extends Page
             $start = Carbon::parse($project->start_date);
             $deadline = Carbon::parse($project->deadline); 
 
+            // Validasi: Deadline tidak boleh sebelum Start Date
             if ($deadline->lt($start)) {
                 $deadline = $start->copy();
             }
             
+            // Logika Inclusive End Date (+1 hari agar terarsir di Gantt)
             $ganttEndDate = $deadline->copy()->addDay();
             $duration = $start->diffInDays($ganttEndDate);
 
@@ -79,8 +99,8 @@ class ProjectTimeline extends Page
                 'text' => $project->title ?? 'Untitled',
                 
                 'start_date' => $start->format('Y-m-d'),
-                'end_date' => $ganttEndDate->format('Y-m-d'),
-                'deadline' => $deadline->format('Y-m-d'),
+                'end_date' => $ganttEndDate->format('Y-m-d'), // Tanggal akhir untuk Gantt Chart (+1 hari)
+                'deadline' => $deadline->format('Y-m-d'),     // Tanggal asli untuk Tooltip
                 
                 'duration' => $duration,
                 'progress' => ($project->progress ?? 0) / 100,

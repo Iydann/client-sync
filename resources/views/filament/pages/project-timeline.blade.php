@@ -43,6 +43,7 @@
                 // KUNCI: Lebar kolom bulan tetap 50px meski datanya 10 tahun
                 // Ini akan memaksa scrollbar muncul panjang ke samping
                 gantt.config.min_column_width = 50; 
+                gantt.config.scale_height = 50;
                 
                 // Cegah chart mengecilkan diri agar muat di layar
                 gantt.config.autosize = false; 
@@ -52,7 +53,8 @@
                 gantt.config.grid_width = 320; 
 
                 gantt.config.scales = [
-                    { unit: 'month', step: 1, format: '%M %Y' },
+                    { unit: 'year', step: 1, format: '%Y' }, // Baris Atas: Tahun (2026)
+                    { unit: 'month', step: 1, format: '%M' }, // Baris Bawah: Bulan (Jan, Feb, ...)
                 ];
 
                 gantt.config.columns = [

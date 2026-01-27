@@ -105,7 +105,7 @@ class AdminPanelProvider extends PanelProvider
         // php artisan cache:clear
         return Cache::remember('project_years_list', 60 * 24, function () {
             try {
-                $minDate = Project::min('contract_date');
+                $minDate = Project::min('start_date');
                 
                 $minYear = $minDate ? Carbon::parse($minDate)->year : now()->year;
                 $maxYear = now()->year;
