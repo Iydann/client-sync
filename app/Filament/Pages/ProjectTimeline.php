@@ -46,22 +46,28 @@ class ProjectTimeline extends Page
     {
         try {
             $start = Carbon::parse($project->start_date);
-            $end = Carbon::parse($project->deadline);
+            $deadline = Carbon::parse($project->deadline); 
+
+            if ($deadline->lt($start)) {
+                $deadline = $start->copy();
+            }
             
+            $ganttEndDate = $deadline->copy()->addDay();
+            $duration = $start->diffInDays($ganttEndDate);
+
             $status = $project->status instanceof \UnitEnum 
                 ? $project->status->value 
                 : ($project->status ?? 'pending');
                 
             $statusLabel = ucwords(str_replace('_', ' ', $status));
 
-            $duration = max(1, $start->diffInDays($end) + 1);
-
             return [
                 'id' => $project->id,
                 'text' => $project->title ?? 'Untitled',
                 
-                'start_date' => $start->format('Y-m-d'), 
-                'deadline' => $end->format('Y-m-d'),
+                'start_date' => $start->format('Y-m-d'),
+                'end_date' => $ganttEndDate->format('Y-m-d'),
+                'deadline' => $deadline->format('Y-m-d'),
                 
                 'duration' => $duration,
                 'progress' => ($project->progress ?? 0) / 100,

@@ -100,8 +100,9 @@ class AdminPanelProvider extends PanelProvider
 
     protected function getProjectYears(): array
     {
-        // UBAH INI: Bungkus dengan Cache
+        // Dibungkus dengan Cache
         // Data akan disimpan selama 1 hari (1440 menit) atau sampai cache dibersihkan.
+        // php artisan cache:clear
         return Cache::remember('project_years_list', 60 * 24, function () {
             try {
                 $minDate = Project::min('contract_date');

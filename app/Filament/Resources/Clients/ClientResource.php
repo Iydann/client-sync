@@ -19,6 +19,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use App\Providers\Filament\AdminPanelProvider;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class ClientResource extends Resource
 {
@@ -31,6 +33,19 @@ class ClientResource extends Resource
     public static function getNavigationGroup(): string
     {
         return AdminPanelProvider::getNavigationGroupName();
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        // Filter berdasarkan tahun dari session
+        $year = session('project_year', now()->year);
+
+        if ($year && $year !== 'all') {
+            $query->whereYear('created_at', $year); 
+        }
+        
+        return $query;
     }
 
     public static function form(Schema $schema): Schema
