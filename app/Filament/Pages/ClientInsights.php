@@ -8,14 +8,15 @@ use Filament\Tables\Table;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
+use App\Filament\Traits\HasGlobalYearFilter;
 
 class ClientInsights extends Page implements HasTable
 {
     use InteractsWithTable;
+    use HasGlobalYearFilter;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-presentation-chart-line';
     protected static ?string $navigationLabel = 'Client Insights';
@@ -27,17 +28,9 @@ class ClientInsights extends Page implements HasTable
 
     public $year;
 
-    public function mount()
+    public function mount(): void
     {
-        $this->year = request()->integer('year', now()->year);
-    }
-
-    #[On('yearChanged')]
-    public function updateYear($year)
-    {
-        $this->year = $year;
-        // Tidak perlu resetPage() manual jika menggunakan trait InteractsWithTable secara standar, 
-        // tapi jika perlu, bisa ditambahkan $this->resetTable();
+        $this->year = session('project_year', now()->year);
     }
 
     public function table(Table $table): Table
@@ -45,15 +38,13 @@ class ClientInsights extends Page implements HasTable
         return $table
             ->query(
                 Client::query()->with([
-                    // Filter Project yang di-load berdasarkan tahun
                     'projects' => function ($query) {
-                        if ($this->year !== 'all') {
+                        if ($this->year && $this->year !== 'all') {
                             $query->whereYear('contract_date', $this->year);
                         }
                     },
-                    // Filter Invoice di dalam project juga
                     'projects.invoices' => function ($query) {
-                        if ($this->year !== 'all') {
+                        if ($this->year && $this->year !== 'all') {
                             $query->whereYear('due_date', $this->year);
                         }
                     }
@@ -66,23 +57,18 @@ class ClientInsights extends Page implements HasTable
                     ->weight(FontWeight::Bold)
                     ->description(fn (Client $record) => $record->client_type->name ?? '-'),
 
-                // Untuk count, kita harus inject filter ke subquery count-nya
                 TextColumn::make('projects_count')
                     ->label('Projects')
                     ->counts('projects', function (Builder $query) {
-                        if ($this->year !== 'all') {
+                        if ($this->year && $this->year !== 'all') {
                             $query->whereYear('contract_date', $this->year);
                         }
                         return $query;
                     })
                     ->formatStateUsing(function (string $state, Client $record) {
-                        // Karena kita sudah memfilter eager loading 'projects' di atas (query utama),
-                        // $record->projects di sini SUDAH terfilter tahunnya.
                         $filteredProjects = $record->projects; 
+                        $active = $filteredProjects->where('status', 'in_progress')->count(); 
                         
-                        $active = $filteredProjects->where('status', 'in_progress')->count(); // Sesuaikan logika status enum/string
-                        
-                        // $state adalah hasil dari counts(), yang juga sudah kita filter di atas.
                         return "{$state} Total ({$active} Active)";
                     })
                     ->color('gray'),
@@ -90,7 +76,6 @@ class ClientInsights extends Page implements HasTable
                 TextColumn::make('total_contract')
                     ->label('Contract Value')
                     ->state(function (Client $record) {
-                        // $record->projects sudah terfilter tahun di query utama
                         return $record->projects->sum('contract_value');
                     })
                     ->money('IDR', locale: 'id'),
@@ -98,7 +83,6 @@ class ClientInsights extends Page implements HasTable
                 TextColumn::make('total_paid')
                     ->label('Paid Revenue')
                     ->state(function (Client $record) {
-                        // projects dan invoices sudah terfilter tahun
                         return $record->projects->flatMap->invoices
                             ->where('status', 'paid')
                             ->sum('amount');

@@ -19,7 +19,7 @@ class StatsOverview extends StatsOverviewWidget
 
     public function mount()
     {
-        $this->year = request('year', now()->year);
+        $this->year = session('project_year', now()->year);
     }
 
     #[On('yearChanged')]

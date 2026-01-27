@@ -24,12 +24,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use App\Models\Project; 
 use Illuminate\Support\Carbon;
+use App\Http\Middleware\SetGlobalProjectYear;
+use Illuminate\Support\Facades\Cache;
 
 class AdminPanelProvider extends PanelProvider
 {
-    /**
-     * Get the navigation group name based on user role
-     */
     public static function getNavigationGroupName(): string
     {
         if (!Auth::check()) {
@@ -63,15 +62,15 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
                 fn(): HtmlString => new HtmlString(
                     view('filament.pages.year-filter', [
-                        'currentYear' => request()->integer('year', now()->year),
-                        'years' => $this->getProjectYears(), // Panggil fungsi helper
+                        'currentYear' => session('project_year', now()->year),
+                        'years' => $this->getProjectYears(),
                     ])->render()
                 )
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                // Dashboard::class, (Hapus bawaan dashboard, karena sudah dibuat di page)
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
@@ -88,6 +87,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                SetGlobalProjectYear::class,
             ])
             ->plugins([
                 FilamentShieldPlugin::make()
@@ -100,24 +100,24 @@ class AdminPanelProvider extends PanelProvider
 
     protected function getProjectYears(): array
     {
-        try {
-            // Cek data project paling lama berdasarkan contract_date
-            $minDate = Project::min('contract_date');
-            
-            $minYear = $minDate ? Carbon::parse($minDate)->year : now()->year;
-            $maxYear = now()->year;
+        // UBAH INI: Bungkus dengan Cache
+        // Data akan disimpan selama 1 hari (1440 menit) atau sampai cache dibersihkan.
+        return Cache::remember('project_years_list', 60 * 24, function () {
+            try {
+                $minDate = Project::min('contract_date');
+                
+                $minYear = $minDate ? Carbon::parse($minDate)->year : now()->year;
+                $maxYear = now()->year;
 
-            // Pastikan minYear tidak melebihi maxYear (jika data kotor masa depan)
-            if ($minYear > $maxYear) {
-                $minYear = $maxYear;
+                if ($minYear > $maxYear) {
+                    $minYear = $maxYear;
+                }
+
+                return range($maxYear, $minYear);
+
+            } catch (\Exception $e) {
+                return range(now()->year, now()->year);
             }
-
-            // Return array range dari Max ke Min (Descending)
-            return range($maxYear, $minYear);
-
-        } catch (\Exception $e) {
-            // Fallback jika tabel belum ada (misal saat migrasi awal)
-            return range(now()->year, now()->year);
-        }
+        });
     }
 }

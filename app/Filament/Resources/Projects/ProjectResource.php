@@ -47,7 +47,15 @@ class ProjectResource extends Resource
         if ($user && $user->hasRole('client')) {
             $query->where('client_id', $user->client?->id);
         }
-        
+    
+        // Ambil tahun dari Session
+        $year = session('project_year', now()->year);
+
+        if ($year && $year !== 'all') {
+            // Filter Global
+            $query->whereYear('contract_date', $year);
+        }
+
         return $query;
     }
 

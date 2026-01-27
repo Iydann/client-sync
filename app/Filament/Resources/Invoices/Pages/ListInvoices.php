@@ -8,37 +8,15 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
+use App\Filament\Traits\HasGlobalYearFilter;
+
+use function Symfony\Component\String\s;
 
 class ListInvoices extends ListRecords
 {
     protected static string $resource = InvoiceResource::class;
 
-    public $year;
-
-    public function mount(): void
-    {
-        parent::mount();
-        $this->year = request()->integer('year', now()->year);
-    }
-
-    #[On('yearChanged')]
-    public function updateYear($year): void
-    {
-        $this->year = $year;
-        $this->resetPage();
-    }
-
-    protected function getTableQuery(): ?Builder
-    {
-        $query = parent::getTableQuery();
-
-        if ($this->year && $this->year !== 'all') {
-            // Asumsi filter berdasarkan due_date atau created_at
-            $query->whereYear('due_date', $this->year);
-        }
-
-        return $query;
-    }
+    use HasGlobalYearFilter;
 
     protected function getHeaderActions(): array
     {

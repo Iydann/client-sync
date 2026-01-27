@@ -6,6 +6,7 @@ use Filament\Pages\Page;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\On;
+use App\Filament\Traits\HasGlobalYearFilter; 
 
 class UserContributions extends Page
 {
@@ -16,45 +17,34 @@ class UserContributions extends Page
 
     protected string $view = 'filament.pages.user-contributions';
 
-    public $year;
-
-    public function mount()
-    {
-        $this->year = request()->integer('year', now()->year);
-    }
-
-    #[On('yearChanged')]
-    public function updateYear($year)
-    {
-        $this->year = $year;
-        // Livewire akan otomatis me-render ulang view karena properti berubah
-    }
+    use HasGlobalYearFilter;
 
     protected function getViewData(): array
     {
-        // Logika penentuan tanggal berdasarkan filter tahun
-        if ($this->year === 'all') {
-            $from = now()->subYear()->startOfDay(); // Default view jika All, misal 1 tahun terakhir
+        $year = session('project_year', now()->year);
+
+        if ($year === 'all') {
+            $from = now()->subYear()->startOfDay(); // Default view jika All (1 tahun terakhir)
             $to   = now()->endOfDay();
         } else {
-            $from = Carbon::createFromDate($this->year, 1, 1)->startOfDay();
-            $to   = Carbon::createFromDate($this->year, 12, 31)->endOfDay();
+            $yearInt = (int) $year;
+            $from = Carbon::createFromDate($yearInt, 1, 1)->startOfDay();
+            $to   = Carbon::createFromDate($yearInt, 12, 31)->endOfDay();
         }
 
         $users = User::query()->get();
         $stats = [];
 
         foreach ($users as $user) {
-            $contributions = $user->contributions() // Pastikan relasi ini ada di Model User
+            $contributions = $user->contributions() 
                 ->whereBetween('created_at', [$from, $to])
                 ->get()
                 ->groupBy(fn ($c) => $c->created_at->toDateString());
 
-            // Gunakan DatePeriod agar heatmap tetap terisi tanggalnya meski kosong datanya
             $period = new \DatePeriod(
                 $from,
                 new \DateInterval('P1D'),
-                $to->copy()->addDay() // Tambah 1 hari agar tanggal terakhir inclusive
+                $to->copy()->addDay()
             );
 
             $heatmap = [];
@@ -63,8 +53,6 @@ class UserContributions extends Page
                 $key = $date->format('Y-m-d');
                 $count = isset($contributions[$key]) ? $contributions[$key]->count() : 0;
 
-                // Batasi jumlah hari jika 'all' agar UI tidak meledak, 
-                // atau biarkan jika library heatmap Anda bisa handle scroll.
                 $heatmap[] = [
                     'date' => $key,
                     'count' => $count,
@@ -83,7 +71,6 @@ class UserContributions extends Page
                 'heatmap' => $heatmap,
             ];
         }
-
-        return compact('users', 'stats', 'from');
+        return compact('users', 'stats', 'from', 'year');
     }
 }

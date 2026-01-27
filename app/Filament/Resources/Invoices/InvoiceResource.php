@@ -38,15 +38,20 @@ class InvoiceResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
-        
         /** @var User|null $user */
         $user = Auth::user();
         
-        // If user is a client, only show invoices for their projects
         if ($user && $user->hasRole('client')) {
             $query->whereHas('project', function ($q) use ($user) {
                 $q->where('client_id', $user->client?->id);
             });
+        }
+
+        // Filter berdasarkan tahun dari session
+        $year = session('project_year', now()->year);
+
+        if ($year && $year !== 'all') {
+            $query->whereYear('due_date', $year); 
         }
         
         return $query;

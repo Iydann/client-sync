@@ -5,7 +5,8 @@ namespace App\Filament\Pages;
 use App\Models\Project;
 use Carbon\Carbon;
 use Filament\Pages\Page;
-use Livewire\Attributes\On; // Pastikan ini di-import
+use Livewire\Attributes\On;
+use App\Filament\Traits\HasGlobalYearFilter; 
 
 class ProjectTimeline extends Page
 {
@@ -13,32 +14,18 @@ class ProjectTimeline extends Page
     protected static ?string $title = 'Project Timeline';
     protected string $view = 'filament.pages.project-timeline';
 
-    // Properti public agar bisa diakses view
-    public $year;
-
-    public function mount()
-    {
-        $this->year = request()->integer('year', now()->year);
-    }
-
-    // Listener Wajib: Menangkap event dari Global Filter
-    #[On('yearChanged')]
-    public function updateYear($year)
-    {
-        $this->year = $year;
-        // Tidak perlu $this->js(), kita akan handle via Alpine di Blade
-    }
+    use HasGlobalYearFilter;
 
     public function getViewData(): array
     {
-        // 1. Query Data
+        $year = session('project_year', now()->year);
+
         $query = Project::query()
             ->whereNotNull('start_date')
             ->whereNotNull('deadline');
 
-        // 2. Filter Tahun
-        if ($this->year !== 'all') {
-            $query->whereYear('contract_date', $this->year);
+        if ($year !== 'all') {
+            $query->whereYear('contract_date', $year);
         }
 
         $projects = $query->get()
@@ -51,7 +38,7 @@ class ProjectTimeline extends Page
                 'data' => $projects->toArray(),
                 'links' => [] 
             ],
-            'currentFilterYear' => $this->year, 
+            'currentFilterYear' => $year, 
         ];
     }
 
@@ -61,14 +48,22 @@ class ProjectTimeline extends Page
             $start = Carbon::parse($project->start_date);
             $end = Carbon::parse($project->deadline);
             
-            $status = $project->status->value ?? $project->status ?? 'pending';
+            $status = $project->status instanceof \UnitEnum 
+                ? $project->status->value 
+                : ($project->status ?? 'pending');
+                
             $statusLabel = ucwords(str_replace('_', ' ', $status));
+
+            $duration = max(1, $start->diffInDays($end) + 1);
 
             return [
                 'id' => $project->id,
                 'text' => $project->title ?? 'Untitled',
+                
                 'start_date' => $start->format('Y-m-d'), 
-                'duration' => max(1, $start->diffInDays($end)),
+                'deadline' => $end->format('Y-m-d'),
+                
+                'duration' => $duration,
                 'progress' => ($project->progress ?? 0) / 100,
                 'status' => $statusLabel,
                 'color' => $this->getStatusColor($status),
