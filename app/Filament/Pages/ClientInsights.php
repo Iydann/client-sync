@@ -8,12 +8,12 @@ use Filament\Tables\Table;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action; // Tambahan wajib untuk Action
 use Filament\Support\Enums\FontWeight;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
 use App\Filament\Traits\HasGlobalYearFilter;
 use Illuminate\Support\Facades\Auth;
-
 
 class ClientInsights extends Page implements HasTable
 {
@@ -27,7 +27,6 @@ class ClientInsights extends Page implements HasTable
     protected static ?int $navigationSort = 2;
     protected string $view = 'filament.pages.client-insights';
 
-    // Sembunyikan jika user memiliki role 'client'
     public static function canAccess(): bool
     {
         return !Auth::user()?->hasRole('client');
@@ -82,9 +81,7 @@ class ClientInsights extends Page implements HasTable
 
                 TextColumn::make('total_contract')
                     ->label('Contract Value')
-                    ->state(function (Client $record) {
-                        return $record->projects->sum('contract_value');
-                    })
+                    ->state(fn (Client $record) => $record->projects->sum('contract_value'))
                     ->money('IDR', locale: 'id'),
 
                 TextColumn::make('total_paid')
@@ -97,19 +94,42 @@ class ClientInsights extends Page implements HasTable
                     ->money('IDR', locale: 'id')
                     ->color('success'),
 
-                TextColumn::make('outstanding')
-                    ->label('Unpaid & Uninvoiced')
+                // KOLOM BARU 1: UNPAID (Tagihan sudah terbit, tapi belum dibayar)
+                TextColumn::make('total_unpaid')
+                    ->label('Unpaid Invoices')
+                    ->state(function (Client $record) {
+                        return $record->projects->flatMap->invoices
+                            ->where('status', '!=', 'paid') // Asumsi status selain paid adalah hutang
+                            ->sum('amount');
+                    })
+                    ->money('IDR', locale: 'id')
+                    ->color('danger'),
+
+                // KOLOM BARU 2: UNINVOICED (Sisa kontrak yang belum dibuatkan invoice sama sekali)
+                TextColumn::make('uninvoiced')
+                    ->label('Uninvoiced')
                     ->state(function (Client $record) {
                         $contract = $record->projects->sum('contract_value');
-                        $paid = $record->projects->flatMap->invoices
-                            ->where('status', 'paid')
-                            ->sum('amount');
+                        // Total Invoiced = Paid + Unpaid (Semua invoice yang ada)
+                        $totalInvoiced = $record->projects->flatMap->invoices->sum('amount');
                         
-                        return max(0, $contract - $paid);
+                        return max(0, $contract - $totalInvoiced);
                     })
                     ->money('IDR', locale: 'id')
                     ->color('warning')
                     ->weight(FontWeight::Medium),
+            ])
+            ->actions([
+                // ACTION BARU: View Projects List
+                Action::make('view_projects')
+                    ->label('View Projects')
+                    ->icon('heroicon-m-eye')
+                    ->modalHeading(fn(Client $record) => "Projects: {$record->client_name}")
+                    ->modalSubmitAction(false) // View only, matikan tombol submit
+                    ->modalCancelAction(fn ($action) => $action->label('Close'))
+                    ->modalContent(fn (Client $record) => view('filament.pages.partials.client-projects-list', [
+                        'projects' => $record->projects, // Menggunakan projects yang sudah di-filter di query utama
+                    ])),
             ])
             ->defaultSort('created_at', 'desc')
             ->paginated([10, 25, 50]);
