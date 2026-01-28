@@ -50,7 +50,7 @@ class ClientForm
                             ->required()
                             ->maxLength(255),
                     ])
-                    ->columns(2)
+                    ->columnSpanFull()
                     ->hidden(fn ($operation) => $operation === 'edit'),
             ]);
     }

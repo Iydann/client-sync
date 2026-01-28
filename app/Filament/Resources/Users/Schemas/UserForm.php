@@ -69,7 +69,7 @@ class UserForm
                         $clientRole = \Spatie\Permission\Models\Role::where('name', 'client')->first();
                         return $clientRole && in_array($clientRole->id, (array) $roles);
                     })
-                    ->columns(2),
+                    ->columnSpanFull(),
             ]);
     }
 }
