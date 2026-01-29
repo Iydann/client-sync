@@ -29,8 +29,7 @@ return new class extends Migration
             $table->foreignId('task_id')->constrained('tasks')->cascadeOnDelete();
             // Relasi ke users
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            
-            $table->timestamps(); // Mencatat kapan user berkontribusi
+            $table->timestamps();
 
             // Mencegah duplikasi nama user yang sama di satu task
             $table->unique(['task_id', 'user_id']); 
@@ -42,10 +41,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Hapus child table (pivot) dulu
         Schema::dropIfExists('task_user');
-        
-        // Baru hapus parent table
         Schema::dropIfExists('tasks');
     }
 };

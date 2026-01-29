@@ -22,12 +22,12 @@ class ProjectTimeline extends Page
         $year = session('project_year', now()->year);
         $user = Auth::user();
 
-        // 1. Base Query
+        // Base Query
         $query = Project::query()
             ->whereNotNull('start_date')
             ->whereNotNull('deadline');
 
-        // 2. Filter Client-Specific (KEAMANAN DATA)
+        // Filter Client-Specific (KEAMANAN DATA)
         if ($user && $user->hasRole('client')) {
             $clientId = $user->client?->id;
             
@@ -39,7 +39,7 @@ class ProjectTimeline extends Page
             }
         }
 
-        // 3. Filter Tahun (LOGIKA BARU: OVERLAP / IRISAN)
+        // Filter Tahun (LOGIKA BARU: OVERLAP / IRISAN)
         // Menangani kasus proyek lintas tahun (misal: Mulai 2025, Selesai 2026)
         // agar muncul di filter 2025 MAUPUN 2026.
         if ($year !== 'all') {
@@ -49,10 +49,10 @@ class ProjectTimeline extends Page
 
             // Ambil project yang memenuhi SALAH SATU syarat:
             $query->where(function ($q) use ($startOfYear, $endOfYear) {
-                $q->whereBetween('start_date', [$startOfYear, $endOfYear]) // 1. Mulai di tahun ini
-                  ->orWhereBetween('deadline', [$startOfYear, $endOfYear]) // 2. Selesai di tahun ini
+                $q->whereBetween('start_date', [$startOfYear, $endOfYear])
+                  ->orWhereBetween('deadline', [$startOfYear, $endOfYear]) 
                   ->orWhere(function ($sub) use ($startOfYear, $endOfYear) {
-                      // 3. Mulai SEBELUM tahun ini DAN Selesai SETELAH tahun ini (Melintasi penuh)
+                      // Mulai SEBELUM tahun ini DAN Selesai SETELAH tahun ini (Melintasi penuh)
                       $sub->where('start_date', '<', $startOfYear)
                           ->where('deadline', '>', $endOfYear);
                   });

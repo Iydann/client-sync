@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Milestones\RelationManagers;
 
-use App\Models\Task; // Import Model Task
+use App\Models\Task;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -89,32 +89,25 @@ class TasksRelationManager extends RelationManager
                 IconColumn::make('is_completed')
                     ->boolean(),
 
-                // MENAMPILKAN LIST KONTRIBUTOR
-                // MENAMPILKAN LIST KONTRIBUTOR (VERTIKAL BADGES)
                 TextColumn::make('contributors.name')
                     ->label('Contributors')
                     ->badge()
                     ->color('success')
                     ->icon('heroicon-m-user')
-                    // 1. Hapus separator koma bawaan (ganti string kosong)
                     ->separator('') 
-                    // 2. Gunakan CSS Tailwind untuk menyusun ke bawah (flex-col)
                     ->extraAttributes([
                         'class' => 'flex flex-col gap-1 items-start', 
                     ])
-                    // 3. Batasi jika terlalu banyak (opsional, biar tidak terlalu panjang ke bawah)
                     ->limitList(3)
                     ->expandableLimitedList(),
             ])
             ->headerActions([
                 CreateAction::make()
                     ->mutateFormDataUsing(function (array $data): array {
-                        // Tetap simpan creator utama di kolom user_id (jika masih ada)
                         $data['user_id'] = Auth::id();
                         return $data;
                     })
                     ->after(function (Task $record) {
-                        // LOGIKA 1: Masukkan Pembuat ke daftar Contributors
                         $record->contributors()->syncWithoutDetaching([Auth::id()]);
                     }),
             ])
@@ -123,8 +116,6 @@ class TasksRelationManager extends RelationManager
                 
                 EditAction::make()
                     ->after(function (Task $record) {
-                        // LOGIKA 2: Masukkan Pengedit ke daftar Contributors
-                        // syncWithoutDetaching menjamin data lama TIDAK hilang
                         $record->contributors()->syncWithoutDetaching([Auth::id()]);
                     }),
                 

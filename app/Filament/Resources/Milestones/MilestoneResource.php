@@ -5,15 +5,15 @@ namespace App\Filament\Resources\Milestones;
 use App\Filament\Resources\Milestones\Pages\CreateMilestone;
 use App\Filament\Resources\Milestones\Pages\EditMilestone;
 use App\Filament\Resources\Milestones\Pages\ListMilestones;
-use App\Filament\Resources\Milestones\Pages\ViewMilestone; // <--- WAJIB: Import Page View
+use App\Filament\Resources\Milestones\Pages\ViewMilestone;
 use App\Filament\Resources\Milestones\RelationManagers\TasksRelationManager;
 use App\Models\Milestone;
 use Filament\Actions\EditAction; 
-use Filament\Actions\ViewAction; // <--- Import Action Unified
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Schema; // Menggunakan Schema (Filament 4.4 / Unified)
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -63,7 +63,7 @@ class MilestoneResource extends Resource
                     ->boolean(),
             ])
             ->actions([
-                ViewAction::make(), // Tombol View standar
+                ViewAction::make(),
                 EditAction::make(),
             ]);
     }
@@ -80,7 +80,7 @@ class MilestoneResource extends Resource
         return [
             'index' => ListMilestones::route('/'),
             'create' => CreateMilestone::route('/create'),
-            'view' => ViewMilestone::route('/{record}'), // <--- WAJIB: Daftarkan Route View
+            'view' => ViewMilestone::route('/{record}'),
             'edit' => EditMilestone::route('/{record}/edit'),
         ];
     }

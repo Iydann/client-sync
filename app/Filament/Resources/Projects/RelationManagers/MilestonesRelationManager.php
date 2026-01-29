@@ -8,11 +8,11 @@ use App\Models\UserContribution;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction; // Import Unified Action
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Schema; // Unified Schema
+use Filament\Schemas\Schema; 
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -40,8 +40,6 @@ class MilestonesRelationManager extends RelationManager
                     ->dehydrated()
                     ->default(fn () => $this->ownerRecord->milestones()->max('order') + 1),
 
-                // Attachments tetap ada di FORM untuk milestone level, 
-                // tapi User minta HAPUS DI TABLE. Jadi form biarkan saja jika masih butuh upload.
                 SpatieMediaLibraryFileUpload::make('attachments')
                     ->collection('milestone-attachments')
                     ->multiple()
@@ -64,12 +62,11 @@ class MilestonesRelationManager extends RelationManager
             ->defaultSort('order', 'asc')
             ->recordUrl(fn (Milestone $record) => MilestoneResource::getUrl('view', ['record' => $record]))
             
-            // OPTIMASI QUERY UNTUK PROGRESS BAR
             ->modifyQueryUsing(function (Builder $query) {
                 return $query->withCount([
-                    'tasks', // Menghitung total tasks
+                    'tasks',
                     'tasks as completed_tasks_count' => function (Builder $query) {
-                        $query->where('is_completed', true); // Menghitung tasks yang selesai
+                        $query->where('is_completed', true);
                     },
                 ]);
             })
@@ -111,8 +108,6 @@ class MilestonesRelationManager extends RelationManager
                         default => 'warning',
                     }),
 
-                // Kolom Attachments DIHAPUS sesuai permintaan
-
                 IconColumn::make('is_completed')
                     ->boolean()
                     ->label('Done'),
@@ -131,7 +126,6 @@ class MilestonesRelationManager extends RelationManager
             ]);
     }
 
-    // Helper kecil agar kode lebih DRY (Don't Repeat Yourself)
     protected function logContribution(string $type)
     {
         $user = Auth::user();
