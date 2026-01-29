@@ -39,29 +39,70 @@ class ClientInsights extends Page implements HasTable
         $this->year = session('project_year', now()->year);
     }
 
+    // Force reset table when year PanelRenderHook changes
+    public function updatedYear(): void 
+    {
+        $this->resetTable(); 
+    }
+
     public function table(Table $table): Table
     {
         return $table
-            ->query(
-                Client::query()->with([
-                    'projects' => function ($query) {
-                        if ($this->year && $this->year !== 'all') {
-                            $query->whereYear('contract_date', $this->year);
-                        }
-                    },
-                    'projects.invoices' => function ($query) {
-                        if ($this->year && $this->year !== 'all') {
-                            $query->whereYear('due_date', $this->year);
-                        }
-                    }
-                ])
+            ->query(fn () => 
+                Client::query()
+                    ->addSelect([
+                        'total_contract' => \App\Models\Project::query()
+                            ->selectRaw('COALESCE(SUM(contract_value), 0)')
+                            ->whereColumn('client_id', 'clients.id')
+                            ->when($this->year && $this->year !== 'all', fn($q) => $q->whereYear('contract_date', $this->year)),
+                    ])
+                    ->addSelect([
+                        'total_paid' => \App\Models\Invoice::query()
+                            ->selectRaw('COALESCE(SUM(invoices.amount), 0)')
+                            ->join('projects', 'invoices.project_id', '=', 'projects.id')
+                            ->whereColumn('projects.client_id', 'clients.id')
+                            ->where('invoices.status', 'paid')
+                            ->when($this->year && $this->year !== 'all', function($q) {
+                                $q->whereYear('invoices.due_date', $this->year)
+                                  ->whereYear('projects.contract_date', $this->year);
+                            }),
+                    ])
+                    ->addSelect([
+                        'total_unpaid' => \App\Models\Invoice::query()
+                            ->selectRaw('COALESCE(SUM(invoices.amount), 0)')
+                            ->join('projects', 'invoices.project_id', '=', 'projects.id')
+                            ->whereColumn('projects.client_id', 'clients.id')
+                            ->where('invoices.status', 'unpaid') // Strict Filter
+                            ->when($this->year && $this->year !== 'all', function($q) {
+                                $q->whereYear('invoices.due_date', $this->year)
+                                  ->whereYear('projects.contract_date', $this->year);
+                            }),
+                    ])
+                    ->addSelect([
+                        'uninvoiced' => \App\Models\Project::query()
+                            ->selectRaw('
+                                COALESCE(SUM(
+                                    GREATEST(0, 
+                                        contract_value - COALESCE((
+                                            SELECT SUM(amount)
+                                            FROM invoices
+                                            WHERE invoices.project_id = projects.id
+                                            AND invoices.status != \'cancelled\'
+                                            ' . ($this->year && $this->year !== 'all' ? "AND YEAR(invoices.due_date) = ".(int)$this->year : "") . '
+                                        ), 0)
+                                    )
+                                ), 0)
+                            ')
+                            ->whereColumn('client_id', 'clients.id')
+                            ->when($this->year && $this->year !== 'all', fn($q) => $q->whereYear('contract_date', $this->year)),
+                    ])
             )
             ->columns([
                 TextColumn::make('client_name')
                     ->label('Client Name')
                     ->searchable()
                     ->weight(FontWeight::Bold)
-                    ->description(fn (Client $record) => $record->client_type->name ?? '-'),
+                    ->sortable(),
 
                 TextColumn::make('projects_count')
                     ->label('Projects Status')
@@ -73,12 +114,9 @@ class ClientInsights extends Page implements HasTable
                     })
                     ->html()
                     ->formatStateUsing(function ($state, Client $record) {
-                        $projects = $record->projects;
-                        if ($this->year && $this->year !== 'all') {
-                            $projects = $projects->filter(function ($project) {
-                                return \Carbon\Carbon::parse($project->contract_date)->year == $this->year;
-                            });
-                        }
+                        $projects = $record->projects()
+                             ->when($this->year && $this->year !== 'all', fn($q) => $q->whereYear('contract_date', $this->year))
+                             ->get(['status']); 
 
                         $getStatus = fn($p) => $p->status instanceof \BackedEnum ? $p->status->value : $p->status;
 
@@ -95,36 +133,24 @@ class ClientInsights extends Page implements HasTable
 
                 TextColumn::make('total_contract')
                     ->label('Contract Value')
-                    ->state(fn (Client $record) => $record->projects->sum('contract_value'))
+                    ->sortable()
                     ->money('IDR', locale: 'id'),
 
                 TextColumn::make('total_paid')
                     ->label('Paid Revenue')
-                    ->state(function (Client $record) {
-                        return $record->projects->flatMap->invoices
-                            ->where('status', 'paid')
-                            ->sum('amount');
-                    })
+                    ->sortable()
                     ->money('IDR', locale: 'id')
                     ->color('success'),
 
                 TextColumn::make('total_unpaid')
                     ->label('Unpaid Invoices')
-                    ->state(function (Client $record) {
-                        return $record->projects->flatMap->invoices
-                            ->where('status', '!=', 'paid')
-                            ->sum('amount');
-                    })
+                    ->sortable()
                     ->money('IDR', locale: 'id')
                     ->color('danger'),
 
                 TextColumn::make('uninvoiced')
                     ->label('Uninvoiced')
-                    ->state(function (Client $record) {
-                        $contract = $record->projects->sum('contract_value');
-                        $totalInvoiced = $record->projects->flatMap->invoices->sum('amount');
-                        return max(0, $contract - $totalInvoiced);
-                    })
+                    ->sortable()
                     ->money('IDR', locale: 'id')
                     ->color('warning')
                     ->weight(FontWeight::Medium),
@@ -139,10 +165,10 @@ class ClientInsights extends Page implements HasTable
                     ->modalCancelAction(fn ($action) => $action->label('Close'))
                     ->modalContent(fn (Client $record) => view('filament.pages.partials.modal-wrapper', [
                         'clientId' => $record->id,
-                        'year' => $this->year, // Mengirim tahun ke modal utk filter
+                        'year' => $this->year,
                     ])),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('client_name', 'asc')
             ->paginated([10, 25, 50]);
     }
 }

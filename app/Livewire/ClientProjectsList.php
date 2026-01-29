@@ -35,7 +35,7 @@ class ClientProjectsList extends Component implements HasForms, HasTable, HasAct
     public function table(Table $table): Table
     {
         return $table
-            ->query(
+            ->query(fn () => 
                 Project::query()
                     ->where('client_id', $this->clientId)
                     ->when($this->year && $this->year !== 'all', function ($query) {
@@ -88,7 +88,7 @@ class ClientProjectsList extends Component implements HasForms, HasTable, HasAct
 
                 TextColumn::make('unpaid_invoiced')
                     ->label('Unpaid (Inv)')
-                    ->state(fn (Project $record) => $record->invoices->where('status', '!=', 'paid')->sum('amount'))
+                    ->state(fn (Project $record) => $record->invoices->where('status', 'unpaid')->sum('amount'))
                     ->money('IDR', locale: 'id')
                     ->color('danger')
                     ->alignEnd()
@@ -97,7 +97,7 @@ class ClientProjectsList extends Component implements HasForms, HasTable, HasAct
                         ->money('IDR', locale: 'id')
                         ->using(fn ($query) => Invoice::query()
                             ->whereIn('project_id', $query->clone()->reorder()->select('projects.id'))
-                            ->where('status', '!=', 'paid')
+                            ->where('status', 'unpaid')
                             ->sum('amount')
                         )
                     ),
@@ -105,8 +105,8 @@ class ClientProjectsList extends Component implements HasForms, HasTable, HasAct
                 TextColumn::make('uninvoiced')
                     ->label('Uninvoiced')
                     ->state(function (Project $record) {
-                        $totalInvoiced = $record->invoices->sum('amount');
-                        return max(0, $record->contract_value - $totalInvoiced);
+                        $validInvoices = $record->invoices->where('status', '!=', 'cancelled')->sum('amount');
+                        return max(0, $record->contract_value - $validInvoices);
                     })
                     ->money('IDR', locale: 'id')
                     ->color('warning')
@@ -120,8 +120,8 @@ class ClientProjectsList extends Component implements HasForms, HasTable, HasAct
                                 ->with('invoices')
                                 ->get()
                                 ->sum(function ($project) {
-                                    $totalInvoiced = $project->invoices->sum('amount');
-                                    return max(0, $project->contract_value - $totalInvoiced);
+                                    $validInvoiced = $project->invoices->where('status', '!=', 'cancelled')->sum('amount');
+                                    return max(0, $project->contract_value - $validInvoiced);
                                 });
                         })
                     ),
