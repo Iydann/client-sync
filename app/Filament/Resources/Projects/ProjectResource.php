@@ -87,8 +87,8 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\MembersRelationManager::class,
             RelationManagers\MilestonesRelationManager::class,
+            RelationManagers\MembersRelationManager::class,
             RelationManagers\InvoicesRelationManager::class,
         ];
     }

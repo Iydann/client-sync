@@ -7,6 +7,8 @@ use App\Filament\Resources\Milestones\Pages\EditMilestone;
 use App\Filament\Resources\Milestones\Pages\ListMilestones;
 use App\Filament\Resources\Milestones\Pages\ViewMilestone;
 use App\Filament\Resources\Milestones\RelationManagers\TasksRelationManager;
+use App\Filament\Resources\Milestones\Schemas\MilestoneForm;
+use App\Filament\Resources\Milestones\Tables\MilestonesTable;
 use App\Models\Milestone;
 use Filament\Actions\EditAction; 
 use Filament\Actions\ViewAction;
@@ -27,46 +29,12 @@ class MilestoneResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([ 
-                TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-
-                Select::make('project_id')
-                    ->relationship('project', 'title')
-                    ->disabled()
-                    ->dehydrated()
-                    ->required(),
-
-                TextInput::make('order')
-                    ->numeric(),
-
-                Toggle::make('is_completed')
-                    ->label('Milestone Completed')
-                    ->default(false)
-                    ->columnSpanFull(),
-            ]);
+        return MilestoneForm::configure($schema);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('name')
-                    ->searchable(),
-
-                TextColumn::make('project.title')
-                    ->sortable()
-                    ->label('Project'),
-
-                IconColumn::make('is_completed')
-                    ->boolean(),
-            ])
-            ->actions([
-                ViewAction::make(),
-                EditAction::make(),
-            ]);
+        return MilestonesTable::configure($table);
     }
 
     public static function getRelations(): array

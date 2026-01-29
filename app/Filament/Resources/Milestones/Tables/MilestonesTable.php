@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Milestones\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\IconColumn;
@@ -15,39 +16,19 @@ class MilestonesTable
     {
         return $table
             ->columns([
-                TextColumn::make('order')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('project.title')
-                    ->label('Project')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('name')
-                    ->sortable()
                     ->searchable(),
+
+                TextColumn::make('project.title')
+                    ->sortable()
+                    ->label('Project'),
+
                 IconColumn::make('is_completed')
-                    ->label('Completed')
-                    ->boolean()
-                    ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->boolean(),
             ])
-            ->filters([
-                //
-            ])
-            ->recordActions([
+            ->actions([
+                ViewAction::make(),
                 EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }
