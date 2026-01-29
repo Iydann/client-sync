@@ -44,7 +44,8 @@ class MilestoneResource extends Resource
 
                 Toggle::make('is_completed')
                     ->label('Milestone Completed')
-                    ->default(false),
+                    ->default(false)
+                    ->columnSpanFull(),
             ]);
     }
 
