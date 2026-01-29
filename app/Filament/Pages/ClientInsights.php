@@ -8,10 +8,10 @@ use Filament\Tables\Table;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\Action; // Tambahan wajib untuk Action
+use Filament\Actions\Action;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\TextSize;
 use Illuminate\Database\Eloquent\Builder;
-use Livewire\Attributes\On;
 use App\Filament\Traits\HasGlobalYearFilter;
 use Illuminate\Support\Facades\Auth;
 
@@ -64,20 +64,34 @@ class ClientInsights extends Page implements HasTable
                     ->description(fn (Client $record) => $record->client_type->name ?? '-'),
 
                 TextColumn::make('projects_count')
-                    ->label('Projects')
+                    ->label('Projects Status')
                     ->counts('projects', function (Builder $query) {
                         if ($this->year && $this->year !== 'all') {
                             $query->whereYear('contract_date', $this->year);
                         }
                         return $query;
                     })
-                    ->formatStateUsing(function (string $state, Client $record) {
-                        $filteredProjects = $record->projects; 
-                        $active = $filteredProjects->where('status', 'in_progress')->count(); 
-                        
-                        return "{$state} Total ({$active} Active)";
+                    ->html()
+                    ->formatStateUsing(function ($state, Client $record) {
+                        $projects = $record->projects;
+                        if ($this->year && $this->year !== 'all') {
+                            $projects = $projects->filter(function ($project) {
+                                return \Carbon\Carbon::parse($project->contract_date)->year == $this->year;
+                            });
+                        }
+
+                        $getStatus = fn($p) => $p->status instanceof \BackedEnum ? $p->status->value : $p->status;
+
+                        $completed = $projects->filter(fn($p) => $getStatus($p) === 'completed')->count();
+                        $inProgress = $projects->filter(fn($p) => $getStatus($p) === 'in_progress')->count();
+                        $pending = $projects->filter(fn($p) => in_array($getStatus($p), ['hold', 'on_hold', 'pending']))->count();
+                        $cancelled = $projects->filter(fn($p) => $getStatus($p) === 'cancelled')->count();
+
+                        return "{$completed} Complete, {$inProgress} In Progress, <br> {$pending} Pending, {$cancelled} Cancelled";
                     })
-                    ->color('gray'),
+                    ->color('gray')
+                    ->size(TextSize::Small) 
+                    ->wrap(), 
 
                 TextColumn::make('total_contract')
                     ->label('Contract Value')
@@ -94,25 +108,21 @@ class ClientInsights extends Page implements HasTable
                     ->money('IDR', locale: 'id')
                     ->color('success'),
 
-                // KOLOM BARU 1: UNPAID (Tagihan sudah terbit, tapi belum dibayar)
                 TextColumn::make('total_unpaid')
                     ->label('Unpaid Invoices')
                     ->state(function (Client $record) {
                         return $record->projects->flatMap->invoices
-                            ->where('status', '!=', 'paid') // Asumsi status selain paid adalah hutang
+                            ->where('status', '!=', 'paid')
                             ->sum('amount');
                     })
                     ->money('IDR', locale: 'id')
                     ->color('danger'),
 
-                // KOLOM BARU 2: UNINVOICED (Sisa kontrak yang belum dibuatkan invoice sama sekali)
                 TextColumn::make('uninvoiced')
                     ->label('Uninvoiced')
                     ->state(function (Client $record) {
                         $contract = $record->projects->sum('contract_value');
-                        // Total Invoiced = Paid + Unpaid (Semua invoice yang ada)
                         $totalInvoiced = $record->projects->flatMap->invoices->sum('amount');
-                        
                         return max(0, $contract - $totalInvoiced);
                     })
                     ->money('IDR', locale: 'id')
@@ -120,15 +130,16 @@ class ClientInsights extends Page implements HasTable
                     ->weight(FontWeight::Medium),
             ])
             ->actions([
-                // ACTION BARU: View Projects List
                 Action::make('view_projects')
                     ->label('View Projects')
                     ->icon('heroicon-m-eye')
                     ->modalHeading(fn(Client $record) => "Projects: {$record->client_name}")
-                    ->modalSubmitAction(false) // View only, matikan tombol submit
+                    ->modalWidth('full')
+                    ->modalSubmitAction(false)
                     ->modalCancelAction(fn ($action) => $action->label('Close'))
-                    ->modalContent(fn (Client $record) => view('filament.pages.partials.client-projects-list', [
-                        'projects' => $record->projects, // Menggunakan projects yang sudah di-filter di query utama
+                    ->modalContent(fn (Client $record) => view('filament.pages.partials.modal-wrapper', [
+                        'clientId' => $record->id,
+                        'year' => $this->year, // Mengirim tahun ke modal utk filter
                     ])),
             ])
             ->defaultSort('created_at', 'desc')
