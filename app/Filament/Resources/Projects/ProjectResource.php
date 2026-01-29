@@ -36,23 +36,33 @@ class ProjectResource extends Resource
         return AdminPanelProvider::getNavigationGroupName();
     }
 
+    /**
+     * Memodifikasi Query Global untuk Resource ini
+     */
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
         
         /** @var User|null $user */
         $user = Auth::user();
+
+        if (!$user) {
+            return $query;
+        }
         
-        // If user is a client, only show their projects
-        if ($user && $user->hasRole('client')) {
+        if ($user->hasRole('client')) {
             $query->where('client_id', $user->client?->id);
         }
+
+        if ($user->hasRole('developer')) {
+            $query->whereHas('members', function (Builder $subQuery) use ($user) {
+                $subQuery->where('users.id', $user->id);
+            });
+        }
     
-        // Ambil tahun dari Session
         $year = session('project_year', now()->year);
 
         if ($year && $year !== 'all') {
-            // Filter Global
             $query->whereYear('contract_date', $year);
         }
 

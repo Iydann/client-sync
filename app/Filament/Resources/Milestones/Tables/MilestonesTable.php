@@ -8,7 +8,6 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 
 class MilestonesTable
 {
@@ -30,13 +29,6 @@ class MilestonesTable
                     ->label('Completed')
                     ->boolean()
                     ->sortable(),
-                SpatieMediaLibraryImageColumn::make('attachments')
-                    ->collection('milestone-attachments')
-                    ->label('Files')
-                    ->circular()
-                    ->stacked()
-                    ->limit(3)
-                    ->limitedRemainingText(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

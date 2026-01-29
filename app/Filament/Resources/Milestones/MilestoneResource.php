@@ -5,57 +5,73 @@ namespace App\Filament\Resources\Milestones;
 use App\Filament\Resources\Milestones\Pages\CreateMilestone;
 use App\Filament\Resources\Milestones\Pages\EditMilestone;
 use App\Filament\Resources\Milestones\Pages\ListMilestones;
-use App\Filament\Resources\Milestones\Schemas\MilestoneForm;
-use App\Filament\Resources\Milestones\Tables\MilestonesTable;
+use App\Filament\Resources\Milestones\Pages\ViewMilestone; // <--- WAJIB: Import Page View
+use App\Filament\Resources\Milestones\RelationManagers\TasksRelationManager;
 use App\Models\Milestone;
-use App\Models\User;
-use BackedEnum;
-use Illuminate\Support\Facades\Auth;
+use Filament\Actions\EditAction; 
+use Filament\Actions\ViewAction; // <--- Import Action Unified
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Schema; // Menggunakan Schema (Filament 4.4 / Unified)
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table; 
 
 class MilestoneResource extends Resource
 {
     protected static ?string $model = Milestone::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
     protected static bool $shouldRegisterNavigation = false;
-
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
-        
-        /** @var User|null $user */
-        $user = Auth::user();
-        
-        // If user is a client, only show milestones for their projects
-        if ($user && $user->hasRole('client')) {
-            $query->whereHas('project', function ($q) use ($user) {
-                $q->where('client_id', $user->client?->id);
-            });
-        }
-        
-        return $query;
-    }
 
     public static function form(Schema $schema): Schema
     {
-        return MilestoneForm::configure($schema);
+        return $schema
+            ->components([ 
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+
+                Select::make('project_id')
+                    ->relationship('project', 'title')
+                    ->disabled()
+                    ->dehydrated()
+                    ->required(),
+
+                TextInput::make('order')
+                    ->numeric(),
+
+                Toggle::make('is_completed')
+                    ->label('Milestone Completed')
+                    ->default(false),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
-        return MilestonesTable::configure($table);
+        return $table
+            ->columns([
+                TextColumn::make('name')
+                    ->searchable(),
+
+                TextColumn::make('project.title')
+                    ->sortable()
+                    ->label('Project'),
+
+                IconColumn::make('is_completed')
+                    ->boolean(),
+            ])
+            ->actions([
+                ViewAction::make(), // Tombol View standar
+                EditAction::make(),
+            ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            TasksRelationManager::class,
         ];
     }
 
@@ -64,6 +80,7 @@ class MilestoneResource extends Resource
         return [
             'index' => ListMilestones::route('/'),
             'create' => CreateMilestone::route('/create'),
+            'view' => ViewMilestone::route('/{record}'), // <--- WAJIB: Daftarkan Route View
             'edit' => EditMilestone::route('/{record}/edit'),
         ];
     }

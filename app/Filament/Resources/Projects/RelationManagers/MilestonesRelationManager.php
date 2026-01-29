@@ -2,17 +2,23 @@
 
 namespace App\Filament\Resources\Projects\RelationManagers;
 
-use App\Filament\Resources\Milestones\Tables\MilestonesTable;
+use App\Filament\Resources\Milestones\MilestoneResource;
+use App\Models\Milestone;
+use App\Models\UserContribution;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Actions\ViewAction; // Import Unified Action
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Schema; // Unified Schema
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
-use App\Models\UserContribution;
 
 class MilestonesRelationManager extends RelationManager
 {
@@ -20,189 +26,121 @@ class MilestonesRelationManager extends RelationManager
 
     protected static ?string $title = 'Milestones';
 
-    protected function getCreateFormSchema(): array
+    public function form(Schema $schema): Schema
     {
-        return [
-            Forms\Components\TextInput::make('name')
-                ->required()
-                ->maxLength(255),
-            Forms\Components\TextInput::make('order')
-                ->numeric()
-                ->disabled()
-                ->dehydrated()
-                ->default(function () {
-                    $maxOrder = $this->ownerRecord->milestones()->max('order') ?? -1;
-                    return $maxOrder + 1;
-                })
-                ->helperText('Automatically set to next sequence'),
-            SpatieMediaLibraryFileUpload::make('attachments')
-                ->collection('milestone-attachments')
-                ->previewable()
-                ->openable()
-                ->multiple()
-                ->maxFiles(5)
-                ->label('Attachments')
-                ->helperText('Upload documents, images or files related to this milestone')
-                ->live(),
-            Forms\Components\Toggle::make('is_completed')
-                ->label('Completed')
-                ->default(false)
-                ->disabled(fn ($get) => empty($get('attachments')))
-                ->helperText(fn ($get) => empty($get('attachments')) ? 'Upload at least one file to mark as completed' : 'Mark this milestone as completed'),
-        ];
-    }
+        return $schema
+            ->components([
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
 
-    protected function getEditFormSchema(): array
-    {
-        return [
-            Forms\Components\TextInput::make('name')
-                ->required()
-                ->maxLength(255),
-            Forms\Components\TextInput::make('order')
-                ->numeric()
-                ->helperText('Change order to resequence milestone'),
-            SpatieMediaLibraryFileUpload::make('attachments')
-                ->collection('milestone-attachments')
-                ->multiple()
-                ->previewable()
-                ->openable()
-                ->maxFiles(5)
-                ->label('Attachments')
-                ->helperText('Upload documents, images or files related to this milestone')
-                ->live(),
-            Forms\Components\Toggle::make('is_completed')
-                ->label('Completed')
-                ->disabled(function ($get, $record) {
-                    $hasAttachments = $get('attachments') && count($get('attachments')) > 0;
-                    $hasExistingMedia = $record && $record->getMedia('milestone-attachments')->count() > 0;
-                    return !$hasAttachments && !$hasExistingMedia;
-                })
-                ->helperText(function ($get, $record) {
-                    $hasAttachments = $get('attachments') && count($get('attachments')) > 0;
-                    $hasExistingMedia = $record && $record->getMedia('milestone-attachments')->count() > 0;
-                    if (!$hasAttachments && !$hasExistingMedia) {
-                        return 'Upload at least one file to mark as completed';
-                    }
-                    return 'Mark this milestone as completed';
-                }),
-        ];
+                TextInput::make('order')
+                    ->numeric()
+                    ->disabled()
+                    ->dehydrated()
+                    ->default(fn () => $this->ownerRecord->milestones()->max('order') + 1),
+
+                // Attachments tetap ada di FORM untuk milestone level, 
+                // tapi User minta HAPUS DI TABLE. Jadi form biarkan saja jika masih butuh upload.
+                SpatieMediaLibraryFileUpload::make('attachments')
+                    ->collection('milestone-attachments')
+                    ->multiple()
+                    ->previewable()
+                    ->openable()
+                    ->maxFiles(5)
+                    ->label('Attachments'),
+
+                Toggle::make('is_completed')
+                    ->label('Completed')
+                    ->default(false),
+            ]);
     }
 
     public function table(Table $table): Table
     {
-        return MilestonesTable::configure($table)
+        return $table
+            ->recordTitleAttribute('name')
             ->reorderable('order')
-            ->defaultSort('order')
+            ->defaultSort('order', 'asc')
+            ->recordUrl(fn (Milestone $record) => MilestoneResource::getUrl('view', ['record' => $record]))
+            
+            // OPTIMASI QUERY UNTUK PROGRESS BAR
+            ->modifyQueryUsing(function (Builder $query) {
+                return $query->withCount([
+                    'tasks', // Menghitung total tasks
+                    'tasks as completed_tasks_count' => function (Builder $query) {
+                        $query->where('is_completed', true); // Menghitung tasks yang selesai
+                    },
+                ]);
+            })
+            
+            ->columns([
+                TextColumn::make('order')
+                    ->label('#')
+                    ->sortable()
+                    ->width(40),
+
+                TextColumn::make('name')
+                    ->searchable()
+                    ->weight('bold'),
+
+                // KOLOM BARU: TOTAL TASK
+                TextColumn::make('tasks_count')
+                    ->label('Total Tasks')
+                    ->badge()
+                    ->color('gray')
+                    ->alignCenter(),
+
+                // KOLOM BARU: PROGRESS (%)
+                TextColumn::make('progress')
+                    ->label('Progress')
+                    ->state(function (Milestone $record) {
+                        // Menggunakan data yang sudah di-load oleh modifyQueryUsing di atas
+                        $total = $record->tasks_count;
+                        $done = $record->completed_tasks_count;
+                        
+                        if ($total == 0) return '0%';
+                        
+                        $percentage = round(($done / $total) * 100);
+                        return "{$percentage}%";
+                    })
+                    ->badge()
+                    ->color(fn (string $state) => match (true) {
+                        $state === '100%' => 'success',
+                        $state === '0%' => 'gray',
+                        default => 'warning',
+                    }),
+
+                // Kolom Attachments DIHAPUS sesuai permintaan
+
+                IconColumn::make('is_completed')
+                    ->boolean()
+                    ->label('Done'),
+            ])
             ->headerActions([
                 CreateAction::make()
-                    ->schema(fn () => $this->getCreateFormSchema())
-                    ->after(function ($record) {
-                        $user = \Illuminate\Support\Facades\Auth::user();
-                        if ($user) {
-                            \App\Models\UserContribution::create([
-                                'user_id' => $user->id,
-                                'type' => 'create_milestone',
-                                'value' => 1,
-                                'year' => now()->year,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-                        }
-                    }),
+                    ->after(fn () => $this->logContribution('create_milestone')),
             ])
-            ->recordActions([
+            ->actions([
+                ViewAction::make()
+                    ->url(fn (Milestone $record) => MilestoneResource::getUrl('view', ['record' => $record])),
                 EditAction::make()
-                    ->schema(fn () => $this->getEditFormSchema())
-                    ->after(function ($record) {
-                        $user = \Illuminate\Support\Facades\Auth::user();
-                        if ($user) {
-                            \App\Models\UserContribution::create([
-                                'user_id' => $user->id,
-                                'type' => 'update_milestone',
-                                'value' => 1,
-                                'year' => now()->year,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-                        }
-                    }),
+                    ->url(fn (Milestone $record) => MilestoneResource::getUrl('edit', ['record' => $record])),
                 DeleteAction::make()
-                    ->after(function ($record) {
-                        $user = \Illuminate\Support\Facades\Auth::user();
-                        if ($user) {
-                            \App\Models\UserContribution::create([
-                                'user_id' => $user->id,
-                                'type' => 'delete_milestone',
-                                'value' => 1,
-                                'year' => now()->year,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-                        }
-                    }),
-            ])
-            ->emptyStateHeading('No milestones')
-            ->emptyStateDescription('Add milestones to track project progress.')
-            ->emptyStateActions([
-                CreateAction::make()
-                    ->schema(fn () => $this->getCreateFormSchema())
-                    ->after(function ($record) {
-                        $user = \Illuminate\Support\Facades\Auth::user();
-                        if ($user) {
-                            \App\Models\UserContribution::create([
-                                'user_id' => $user->id,
-                                'type' => 'create_milestone',
-                                'value' => 1,
-                                'year' => now()->year,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-                        }
-                    }),
+                    ->after(fn () => $this->logContribution('delete_milestone')),
             ]);
     }
 
-    public function afterCreate($record): void
+    // Helper kecil agar kode lebih DRY (Don't Repeat Yourself)
+    protected function logContribution(string $type)
     {
         $user = Auth::user();
         if ($user) {
             UserContribution::create([
                 'user_id' => $user->id,
-                'type' => 'create_milestone',
+                'type' => $type,
                 'value' => 1,
                 'year' => now()->year,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-    }
-
-    public function afterEdit($record): void
-    {
-        $user = Auth::user();
-        if ($user) {
-            UserContribution::create([
-                'user_id' => $user->id,
-                'type' => 'update_milestone',
-                'value' => 1,
-                'year' => now()->year,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-    }
-
-    public function afterDelete($record): void
-    {
-        $user = Auth::user();
-        if ($user) {
-            UserContribution::create([
-                'user_id' => $user->id,
-                'type' => 'delete_milestone',
-                'value' => 1,
-                'year' => now()->year,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         }
     }

@@ -27,6 +27,9 @@ class Milestone extends Model implements HasMedia
     public function project() {
         return $this->belongsTo(Project::class);
     }
+    public function tasks() {
+        return $this->hasMany(Task::class);
+    }
 
     protected static function booted(): void
     {
