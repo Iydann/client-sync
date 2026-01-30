@@ -15,7 +15,7 @@ class InvitationController extends Controller
         $user = User::where('invitation_token', $token)->first();
 
         if (!$user) {
-            abort(404, 'Link undangan tidak valid atau sudah kadaluarsa.');
+            abort(404, 'Invitation link is invalid or has expired.');
         }
 
         return view('auth.client-setup-password', compact('user', 'token'));
@@ -32,15 +32,13 @@ class InvitationController extends Controller
         // Update User
         $user->update([
             'password' => Hash::make($request->password),
-            'status' => 'active',
+            'status' => 'ready',
             'invitation_token' => null, // Hapus token biar link mati (single use)
             'email_verified_at' => now(),
         ]);
 
-        // Auto Login
         Auth::login($user);
 
-        // Redirect ke dashboard (sesuaikan dengan path dashboard filament/project)
         return redirect('/portal'); 
     }
 }

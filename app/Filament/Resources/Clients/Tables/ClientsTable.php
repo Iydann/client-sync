@@ -7,8 +7,12 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use App\ClientType;
-use Filament\Schemas\Components\View;
+use Filament\Actions\Action; // SAYA TIDAK UBAH INI
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str; // PENTING: Pakai Str untuk token manual
+use App\Mail\ClientInvitationMail;
+use Filament\Notifications\Notification;
 
 class ClientsTable
 {
@@ -21,14 +25,12 @@ class ClientsTable
                     ->searchable()
                     ->weight('bold'),
 
-                // PERBAIKAN: Menampilkan Status User (Active/Pending)
                 TextColumn::make('user.status')
                     ->label('Status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'active' => 'success',   // Hijau (Sudah verifikasi)
-                        'pending' => 'warning',  // Kuning (Belum set password)
-                        'banned' => 'danger',
+                        'ready' => 'success',  
+                        'invited' => 'warning',  
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
@@ -36,49 +38,43 @@ class ClientsTable
 
                 TextColumn::make('user.email')
                     ->label('Email')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('client_type')
-                    ->label('Client Type')
-                    ->formatStateUsing(fn ($state) => $state?->getLabel() ?? $state?->value)
-                    ->sortable()
-                    ->searchable()
-                    ->badge(),
-
-                TextColumn::make('phone')
                     ->searchable(),
 
-                TextColumn::make('address')
-                    ->limit(50)
-                    ->toggleable()
-                    ->searchable(),
-
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
+                TextColumn::make('phone')->searchable(),
+                TextColumn::make('address')->limit(50)->toggleable(),
             ])
             ->recordActions([
                 ViewAction::make(),
-                // Opsional: Tombol Resend Invite jika masih pending
-                \Filament\Actions\Action::make('resend_invite')
+                
+                Action::make('resend_invite')
+                    ->label('Resend Invite')
                     ->icon('heroicon-m-envelope')
-                    ->color('gray')
-                    ->visible(fn ($record) => $record->user->status === 'pending')
+                    ->color('warning')
+                    ->visible(fn ($record) => in_array($record->user->status, ['invited', 'pending']))
                     ->requiresConfirmation()
+                    ->modalHeading('Resend Invitation')
+                    ->modalDescription('A new token will be generated and a Setup Password link will be sent.')
                     ->action(function ($record) {
-                        \Illuminate\Support\Facades\Mail::to($record->user->email)
-                            ->send(new \App\Mail\ClientInvitationMail($record->user, $record->user->invitation_token));
-                        \Filament\Notifications\Notification::make()->title('Undangan dikirim ulang')->success()->send();
+                        $user = $record->user;
+
+                        // 1. Generate Token Manual (Agar terbaca di InvitationController)
+                        $newToken = Str::random(64);
+
+                        // 2. Update User (Simpan token di tabel users, BUKAN password_reset_tokens)
+                        $user->update([
+                            'invitation_token' => $newToken,
+                            'status' => 'invited',
+                        ]);
+
+                        // 3. Kirim Email Tipe 'invite'
+                        // Parameter ke-3 'invite' akan memicu route('invitation.show')
+                        Mail::to($user->email)
+                            ->send(new ClientInvitationMail($user, $newToken, 'invite'));
+
+                        Notification::make()
+                            ->title('Invitation resent')
+                            ->success()
+                            ->send();
                     }),
             ])
             ->toolbarActions([

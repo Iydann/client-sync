@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\Event;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Event::listen(PasswordReset::class, function ($event) {
+            
+            $event->user->update([
+                'status' => 'ready',      
+                'invitation_token' => null, 
+                'email_verified_at' => now(), 
+            ]);
+            
+        });
     }
 }

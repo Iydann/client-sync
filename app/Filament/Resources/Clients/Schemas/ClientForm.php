@@ -37,9 +37,9 @@ class ClientForm
                     ->schema([
                         // --- TOGGLE UNDANGAN ---
                         Toggle::make('send_invitation')
-                            ->label('Kirim undangan via Email? (Klien buat password sendiri)')
+                            ->label('Send invitation via Email? (Client sets their own password)')
                             ->default(true)
-                            ->live() // Agar form bereaksi live
+                            ->live()
                             ->columnSpanFull(),
 
                         TextInput::make('user.name')
