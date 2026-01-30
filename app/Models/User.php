@@ -9,6 +9,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\UserContribution;
+use App\Mail\ClientInvitationMail;
+use Illuminate\Support\Facades\Mail;
 
 class User extends Authenticatable
 {
@@ -24,6 +26,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'status',
+        'invitation_token',
     ];
 
     /**
@@ -47,6 +51,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        Mail::to($this->email)->send(new ClientInvitationMail($this, $token, 'reset'));
     }
 
     // Relationships

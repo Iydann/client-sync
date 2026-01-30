@@ -6,6 +6,7 @@ use App\ClientType;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle; // Import Toggle
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -18,23 +19,47 @@ class UserForm
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+                
                 TextInput::make('email')
                     ->email()
                     ->required()
                     ->maxLength(255),
+
                 TextInput::make('password')
-                    ->label('New Password')
+                    ->label('Password')
                     ->password()
-                    ->required(fn($operation) => $operation === 'create')
+                    // Wajib HANYA JIKA: Create User DAN (Undangan Mati ATAU Bukan Client)
+                    ->required(fn($operation, $get) => 
+                        $operation === 'create' && !$get('send_invitation')
+                    )
+                    // Sembunyi JIKA: Toggle Undangan Aktif
+                    ->visible(fn ($get) => !$get('send_invitation'))
                     ->dehydrated(fn($state) => filled($state))
                     ->maxLength(255),
+
                 Select::make('roles')
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload()
                     ->maxItems(1)
                     ->searchable()
-                    ->live(),
+                    ->live(), // Live agar bisa mentrigger perubahan di bawahnya
+
+                Toggle::make('send_invitation')
+                    ->label(fn ($operation) => $operation === 'create'
+                        ? 'Send Invitation Email to Set Password'
+                        : 'Resend Invitation / Reset Password Email'
+                    )
+                    ->default(false)
+                    ->live()
+                    ->columnSpanFull()
+                    ->visible(function ($get) {
+                        // Cek apakah role yang dipilih adalah 'client'
+                        $roles = $get('roles');
+                        if (!$roles) return false;
+                        $clientRole = \Spatie\Permission\Models\Role::where('name', 'client')->first();
+                        return $clientRole && in_array($clientRole->id, (array) $roles);
+                    }),
                 
                 Section::make('Client Information')
                     ->schema([

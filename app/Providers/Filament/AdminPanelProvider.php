@@ -53,6 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Indigo,
             ])
+            ->passwordReset()
             ->navigationGroups([
                 $groupName,
                 "Analytics",

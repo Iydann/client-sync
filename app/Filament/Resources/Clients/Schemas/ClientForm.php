@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Clients\Schemas;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use App\Models\User;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
@@ -34,6 +35,13 @@ class ClientForm
                 Section::make('User Information')
                     ->description('Login credentials for the client')
                     ->schema([
+                        // --- TOGGLE UNDANGAN ---
+                        Toggle::make('send_invitation')
+                            ->label('Kirim undangan via Email? (Klien buat password sendiri)')
+                            ->default(true)
+                            ->live() // Agar form bereaksi live
+                            ->columnSpanFull(),
+
                         TextInput::make('user.name')
                             ->label('Name')
                             ->required()
@@ -44,10 +52,13 @@ class ClientForm
                             ->required()
                             ->unique(User::class, 'email')
                             ->maxLength(255),
+
+                        // --- PASSWORD KONDISIONAL ---
                         TextInput::make('user.password')
                             ->label('Password')
                             ->password()
-                            ->required()
+                            ->required(fn ($get) => !$get('send_invitation'))
+                            ->hidden(fn ($get) => $get('send_invitation'))
                             ->maxLength(255),
                     ])
                     ->columnSpanFull()
@@ -55,4 +66,3 @@ class ClientForm
             ]);
     }
 }
-
