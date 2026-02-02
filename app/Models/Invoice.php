@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\InvoiceStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -19,6 +20,7 @@ class Invoice extends Model
     protected $casts = [
         'due_date' => 'date',
         'amount' => 'decimal:0',
+        'status' => InvoiceStatus::class,
     ];
 
     // generate invoice number
@@ -56,7 +58,7 @@ class Invoice extends Model
 
     // Helper methods
     public function isPaid() {
-        return $this->status === 'paid';
+        return $this->status === InvoiceStatus::Paid;
     }
 
     protected static function booted(): void
