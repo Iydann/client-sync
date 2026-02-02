@@ -43,6 +43,7 @@ class UserForm
                     ->preload()
                     ->maxItems(1)
                     ->searchable()
+                    ->required()
                     ->live(), // Live agar bisa mentrigger perubahan di bawahnya
 
                 Toggle::make('send_invitation')

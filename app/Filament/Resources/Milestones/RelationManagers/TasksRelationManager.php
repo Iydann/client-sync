@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Milestones\RelationManagers;
 
 use App\Models\Task;
+use App\Models\UserContribution;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -19,6 +20,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 
 class TasksRelationManager extends RelationManager
 {
@@ -109,6 +111,7 @@ class TasksRelationManager extends RelationManager
                     })
                     ->after(function (Task $record) {
                         $record->contributors()->syncWithoutDetaching([Auth::id()]);
+                        $this->logContribution('create_task');
                     }),
             ])
             ->actions([
@@ -117,14 +120,30 @@ class TasksRelationManager extends RelationManager
                 EditAction::make()
                     ->after(function (Task $record) {
                         $record->contributors()->syncWithoutDetaching([Auth::id()]);
+                        $this->logContribution('update_task');
                     }),
                 
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->before(function () {
+                        $this->logContribution('delete_task');
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected function logContribution(string $type): void
+    {
+        $year = now()->year;
+        
+        UserContribution::create([
+            'user_id' => Auth::id(),
+            'type' => $type,
+            'value' => 1,
+            'year' => $year,
+        ]);
     }
 }

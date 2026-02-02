@@ -20,7 +20,10 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ClientSeeder::class,
             ProjectSeeder::class,
+            ProjectMemberSeeder::class,
             MilestoneSeeder::class,
+            TaskSeeder::class,
+            UserContributionSeeder::class,
             InvoiceSeeder::class,
         ]);
     }
