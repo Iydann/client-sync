@@ -23,7 +23,11 @@ class UserForm
                 TextInput::make('email')
                     ->email()
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->unique(table: 'users', column: 'email', ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => 'This email address is already registered.',
+                    ]),
 
                 TextInput::make('password')
                     ->label('Password')

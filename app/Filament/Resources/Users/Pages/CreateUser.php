@@ -12,10 +12,15 @@ class CreateUser extends CreateRecord
 
     protected static string $resource = UserResource::class;
 
+    protected bool $shouldSendInvitation = false;
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Ambil status toggle invite
         $isInviting = $data['send_invitation'] ?? false;
+        
+        // Simpan status untuk digunakan di afterCreate
+        $this->shouldSendInvitation = $isInviting;
         
         // Hapus field toggle dari data agar tidak error SQL
         unset($data['send_invitation']);
@@ -27,7 +32,9 @@ class CreateUser extends CreateRecord
 
     protected function afterCreate(): void
     {
-        // Panggil fungsi kirim email dari Trait setelah user berhasil dibuat
-        $this->sendInvitationEmail($this->record);
+        // HANYA kirim email jika toggle aktif
+        if ($this->shouldSendInvitation) {
+            $this->sendInvitationEmail($this->record);
+        }
     }
 }
