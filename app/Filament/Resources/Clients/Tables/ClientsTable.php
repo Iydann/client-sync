@@ -7,10 +7,10 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Actions\Action; // SAYA TIDAK UBAH INI
+use Filament\Actions\Action;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str; // PENTING: Pakai Str untuk token manual
+use Illuminate\Support\Str;
 use App\Mail\ClientInvitationMail;
 use Filament\Notifications\Notification;
 
@@ -56,23 +56,17 @@ class ClientsTable
                     ->modalDescription('A new token will be generated and a Setup Password link will be sent.')
                     ->action(function ($record) {
                         $user = $record->user;
-
-                        // 1. Generate Token Manual (Agar terbaca di InvitationController)
                         $newToken = Str::random(64);
-
-                        // 2. Update User (Simpan token di tabel users, BUKAN password_reset_tokens)
                         $user->update([
                             'invitation_token' => $newToken,
                             'status' => 'invited',
                         ]);
-
-                        // 3. Kirim Email Tipe 'invite'
-                        // Parameter ke-3 'invite' akan memicu route('invitation.show')
                         Mail::to($user->email)
                             ->send(new ClientInvitationMail($user, $newToken, 'invite'));
 
                         Notification::make()
                             ->title('Invitation resent')
+                            ->body("An invitation email has been sent to {$user->email}")
                             ->success()
                             ->send();
                     }),

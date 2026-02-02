@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Passwords\PasswordBroker; // Import ini
-use Illuminate\Support\Facades\DB;            // Import ini
+use Illuminate\Auth\Passwords\PasswordBroker;
+use Illuminate\Support\Facades\DB;
 use App\Mail\ClientInvitationMail;
 use Filament\Notifications\Notification;
 use App\Models\User;
@@ -34,36 +34,35 @@ trait HasInvitationLogic
     {
         if (!$user) return;
 
-        // KASUS 1: USER MASIH INVITED (Kirim Link Setup Password Custom)
         if ($user->status === 'invited' && $user->invitation_token) {
             try {
                 Mail::to($user->email)
                     ->send(new ClientInvitationMail($user, $user->invitation_token, 'invite'));
                 
-                Notification::make()->title('Invitation Sent.')->success()->send();
+                Notification::make()
+                    ->title('Invitation Link Sent')->success()->send()
+                    ->body("An invitation email has been sent to {$user->email}")
+                    ->success()
+                    ->send();
             } catch (\Exception $e) {
                 Notification::make()->title('Failed to Send Invitation.')->body($e->getMessage())->warning()->send();
             }
         }
-        
-        // KASUS 2: USER SUDAH READY (Kirim Link Reset Password Resmi)
+
         elseif ($user->status === 'ready') {
             try {
-                // 1. Bersihkan token lama di tabel password_reset_tokens
                 DB::table('password_reset_tokens')->where('email', $user->email)->delete();
 
-                // 2. Buat Token Resmi via Broker
                 /** @var PasswordBroker $broker */
                 $broker = Password::broker();
                 $token = $broker->createToken($user);
 
-                // 3. Kirim Email Tipe 'reset' (Link menuju halaman Reset Password Bawaan)
                 Mail::to($user->email)
                     ->send(new ClientInvitationMail($user, $token, 'reset'));
 
                 Notification::make()
-                    ->title('Link Reset Password Terkirim')
-                    ->body("Email reset password dikirim ke {$user->email}")
+                    ->title('Password Reset Link Sent')
+                    ->body("A password reset email has been sent to {$user->email}")
                     ->success()
                     ->send();
 

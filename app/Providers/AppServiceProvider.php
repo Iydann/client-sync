@@ -29,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
                 'email_verified_at' => now(), 
             ]);
             
+            \Illuminate\Support\Facades\Auth::login($event->user);
         });
     }
 }
