@@ -2,16 +2,15 @@
 
 namespace App\Filament\Resources\Invoices\Tables;
 
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\InvoiceMail;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
-use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Mail;
 
 class InvoicesTable
 {
@@ -62,30 +61,59 @@ class InvoicesTable
             ->filters([
                 //
             ])
-            ->recordActions([
-                ViewAction::make(),
-                Action::make('download_pdf')
-                    ->label('Download PDF')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->action(function ($record) {
-                        $record->load(['project.client.user']);
-                        $pdf = Pdf::loadView('pdf.invoice', ['invoice' => $record]);
-                        return response()->streamDownload(function () use ($pdf) {
-                            echo $pdf->output();
-                        }, $record->invoice_number . '.pdf');
-                    }),
-                Action::make('preview_pdf')
-                    ->label('Preview PDF')
-                    ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->url(fn ($record) => route('invoice.preview', $record->id))
-                    ->openUrlInNewTab(),
+            ->actions([
+                self::sendInvoiceAction(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function sendInvoiceAction(): Action
+    {
+        return Action::make('send_invoice')
+            ->label(fn ($record) => $record->sent_at ? 'Resend' : 'Send')
+            ->icon('heroicon-o-paper-airplane')
+            ->color(fn ($record) => $record->sent_at ? 'gray' : 'primary')
+            ->requiresConfirmation()
+            ->modalHeading(fn ($record) => $record->sent_at ? 'Resend Invoice?' : 'Send Invoice?')
+            ->modalDescription(fn ($record) => $record->sent_at 
+                ? 'This invoice was already sent on ' . $record->sent_at->format('d M Y H:i') . '. Are you sure you want to resend it?'
+                : 'Are you sure you want to send this invoice to the client\'s email?')
+            ->modalSubmitActionLabel(fn ($record) => $record->sent_at ? 'Resend' : 'Send')
+            ->action(function ($record) {
+                $record->load(['project.client.user']);
+                
+                $clientEmail = $record->project->client->user->email ?? null;
+                
+                if (!$clientEmail) {
+                    Notification::make()
+                        ->title('Failed to send invoice')
+                        ->body('Client email not found.')
+                        ->danger()
+                        ->send();
+                    return;
+                }
+
+                try {
+                    Mail::to($clientEmail)->send(new InvoiceMail($record));
+                    
+                    $record->update(['sent_at' => now()]);
+
+                    Notification::make()
+                        ->title('Invoice sent successfully')
+                        ->body('Invoice has been sent to ' . $clientEmail)
+                        ->success()
+                        ->send();
+                } catch (\Exception $e) {
+                    Notification::make()
+                        ->title('Failed to send invoice')
+                        ->body('Error: ' . $e->getMessage())
+                        ->danger()
+                        ->send();
+                }
+            });
     }
 }

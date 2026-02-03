@@ -18,6 +18,7 @@ class UpcomingProjectDeadlines extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Project $record) => route('filament.admin.resources.projects.view', $record))
             ->heading('Upcoming Project Deadlines (Next 30 Days)')
             ->query(
                 Project::query()
@@ -43,6 +44,27 @@ class UpcomingProjectDeadlines extends BaseWidget
                     ->searchable()
                     ->sortable(),
                 
+                Tables\Columns\TextColumn::make('progress')
+                    ->label('Progress')
+                    ->formatStateUsing(fn ($state) => $state . '%')
+                    ->badge()
+                    ->color(fn ($state) => match (true) {
+                        $state >= 80 => 'success',
+                        $state >= 50 => 'warning',
+                        default => 'danger',
+                    }),
+                
+                // payment progress
+                Tables\Columns\TextColumn::make('payment_progress')
+                    ->label('Payment Progress')
+                    ->formatStateUsing(fn ($state) => $state . '%')
+                    ->badge()
+                    ->color(fn ($state) => match (true) {
+                        $state >= 80 => 'success',
+                        $state >= 50 => 'warning',
+                        default => 'danger',
+                    }),
+
                 Tables\Columns\TextColumn::make('deadline')
                     ->label('Deadline')
                     ->date('d M Y')
@@ -53,16 +75,6 @@ class UpcomingProjectDeadlines extends BaseWidget
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->sortable(),
-                
-                Tables\Columns\TextColumn::make('progress')
-                    ->label('Progress')
-                    ->formatStateUsing(fn ($state) => $state . '%')
-                    ->badge()
-                    ->color(fn ($state) => match (true) {
-                        $state >= 80 => 'success',
-                        $state >= 50 => 'warning',
-                        default => 'danger',
-                    }),
             ])
             ->paginated([5, 10]);
     }

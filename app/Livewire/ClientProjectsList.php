@@ -11,6 +11,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Support\Enums\FontWeight;
+use Filament\Actions\ViewAction;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Livewire\Component;
@@ -35,6 +36,7 @@ class ClientProjectsList extends Component implements HasForms, HasTable, HasAct
     public function table(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Project $record) => route('filament.admin.resources.projects.view', $record->id))
             ->query(fn () => 
                 Project::query()
                     ->where('client_id', $this->clientId)
@@ -87,7 +89,7 @@ class ClientProjectsList extends Component implements HasForms, HasTable, HasAct
                     ),
 
                 TextColumn::make('unpaid_invoiced')
-                    ->label('Unpaid (Inv)')
+                    ->label('Unpaid')
                     ->state(fn (Project $record) => $record->invoices->where('status', 'unpaid')->sum('amount'))
                     ->money('IDR', locale: 'id')
                     ->color('danger')

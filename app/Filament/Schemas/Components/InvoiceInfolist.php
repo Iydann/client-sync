@@ -2,6 +2,7 @@
 
 namespace App\Filament\Schemas\Components;
 
+use App\Models\Project;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
 use Filament\Infolists\Components\TextEntry;

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('amount', 15, 0);
             $table->string('status', 50)->default('unpaid');
             $table->date('due_date');
+            $table->timestamp('sent_at')->nullable();
             $table->timestamps();
         });
     }

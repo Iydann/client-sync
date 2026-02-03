@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\Invoices\Schemas;
 
 use App\Models\Invoice;
+use App\Models\Project;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
-use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Section;
 
 class InvoiceForm
 {
@@ -15,22 +17,55 @@ class InvoiceForm
     {
         return $schema
             ->schema([
-                Select::make('project_id')
-                    ->relationship('project', 'title')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->label('Project')
-                    ->disabled(fn ($context) => $context === 'edit' || request()->routeIs('filament.*.resources.projects.edit'))
-                    ->hidden(fn () => request()->routeIs('filament.*.resources.projects.edit')),
-                TextInput::make('invoice_number')
-                    ->label('Invoice Number')
-                    ->disabled()
-                    ->dehydrated()
-                    ->default(fn () => Invoice::previewInvoiceNumber())
-                    ->required()
-                    ->maxLength(100)
-                    ->unique(ignoreRecord: true),
+                Section::make('Invoice Information')
+                    ->columns(2)
+                    ->schema([
+                        Select::make('project_id')
+                            ->relationship('project', 'title')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->label('Project')
+                            ->disabled(fn ($context) => $context === 'edit' || request()->routeIs('filament.*.resources.projects.edit'))
+                            ->hidden(fn () => request()->routeIs('filament.*.resources.projects.edit'))
+                            ->live()
+                            ->afterStateHydrated(function ($state, callable $set, $record) {
+                                $projectId = $state ?? $record?->project_id;
+                                self::setInvoiceNumberAndSequence($set, $projectId, $record);
+                            })
+                            ->afterStateUpdated(function ($state, callable $set, $record) {
+                                self::setInvoiceNumberAndSequence($set, $state, $record);
+                            })
+                            ->columnSpan('full'),
+                        TextInput::make('invoice_number')
+                            ->label('Invoice Number')
+                            ->disabled()
+                            ->dehydrated()
+                            ->default('-')
+                            ->required()
+                            ->maxLength(100)
+                            ->unique(ignoreRecord: true),
+                        TextInput::make('invoice_sequence')
+                            ->label('Invoice Sequence')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->default('-'),
+                    ]),
+                Section::make('Project Contract Information')
+                    ->columns(2)
+                    ->schema([
+                        Placeholder::make('contract_value')
+                            ->label('Contract Value')
+                            ->columnSpan('full')
+                            ->content(fn (callable $get) => self::formatContractValue($get('project_id'))),
+                        Placeholder::make('total_invoiced')
+                            ->label('Total Invoiced')
+                            ->content(fn (callable $get) => self::formatTotalInvoiced($get('project_id'))),
+                        Placeholder::make('remaining')
+                            ->label('Remaining')
+                            ->content(fn (callable $get) => self::formatRemaining($get('project_id'))),
+                    ]),
+
                 TextInput::make('amount')
                     ->required()
                     ->numeric()
@@ -47,4 +82,73 @@ class InvoiceForm
                     ->required(),
             ]);
     }
+
+    private static function setInvoiceNumberAndSequence(callable $set, ?int $projectId, $record): void
+    {
+        if (!$projectId) {
+            $set('invoice_number', '-');
+            $set('invoice_sequence', '-');
+            return;
+        }
+
+        $sequence = self::computeSequence($projectId, $record);
+        $set('invoice_sequence', $sequence ? '#' . $sequence : '-');
+        $set('invoice_number', $sequence ? Invoice::previewInvoiceNumber() : '-');
+    }
+
+    private static function computeSequence(int $projectId, $record): ?int
+    {
+        $ids = Invoice::where('project_id', $projectId)
+            ->orderBy('created_at', 'asc')
+            ->pluck('id')
+            ->toArray();
+
+        if ($record && in_array($record->id, $ids, true)) {
+            return array_search($record->id, $ids, true) + 1;
+        }
+
+        return count($ids) + 1;
+    }
+
+    private static function formatContractValue(?int $projectId): string
+    {
+        if (!$projectId) {
+            return 'IDR 0';
+        }
+        $project = Project::find($projectId);
+        return 'IDR ' . number_format($project?->contract_value ?? 0, 0, ',', '.');
+    }
+
+    private static function formatTotalInvoiced(?int $projectId): string
+    {
+        if (!$projectId) {
+            return 'IDR 0';
+        }
+        $project = Project::find($projectId);
+        if (!$project) {
+            return 'IDR 0';
+        }
+        $totalInvoiced = $project->invoices()
+            ->where('status', '!=', 'cancelled')
+            ->sum('amount') ?? 0;
+        return 'IDR ' . number_format($totalInvoiced, 0, ',', '.');
+    }
+
+    private static function formatRemaining(?int $projectId): string
+    {
+        if (!$projectId) {
+            return 'IDR 0';
+        }
+        $project = Project::find($projectId);
+        if (!$project) {
+            return 'IDR 0';
+        }
+        $contractValue = $project->contract_value ?? 0;
+        $totalInvoiced = $project->invoices()
+            ->where('status', '!=', 'cancelled')
+            ->sum('amount') ?? 0;
+        $remaining = $contractValue - $totalInvoiced;
+        return 'IDR ' . number_format($remaining, 0, ',', '.');
+    }
+
 }

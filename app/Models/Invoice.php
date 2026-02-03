@@ -15,12 +15,14 @@ class Invoice extends Model
         'amount',
         'status',
         'due_date',
+        'sent_at',
     ];
 
     protected $casts = [
         'due_date' => 'date',
         'amount' => 'decimal:0',
         'status' => InvoiceStatus::class,
+        'sent_at' => 'datetime',
     ];
 
     // generate invoice number
@@ -54,6 +56,10 @@ class Invoice extends Model
     // Relationships
     public function project() {
         return $this->belongsTo(Project::class);
+    }
+
+    public function invoices() {
+        return $this->project->invoices();
     }
 
     // Helper methods

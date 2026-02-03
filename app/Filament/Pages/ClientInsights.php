@@ -48,6 +48,7 @@ class ClientInsights extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
+            ->recordAction('view_projects')
             ->query(fn () => 
                 Client::query()
                     ->addSelect([
@@ -105,31 +106,14 @@ class ClientInsights extends Page implements HasTable
                     ->sortable(),
 
                 TextColumn::make('projects_count')
-                    ->label('Projects Status')
+                    ->label('Total Projects')
                     ->counts('projects', function (Builder $query) {
                         if ($this->year && $this->year !== 'all') {
                             $query->whereYear('contract_date', $this->year);
                         }
                         return $query;
                     })
-                    ->html()
-                    ->formatStateUsing(function ($state, Client $record) {
-                        $projects = $record->projects()
-                             ->when($this->year && $this->year !== 'all', fn($q) => $q->whereYear('contract_date', $this->year))
-                             ->get(['status']); 
-
-                        $getStatus = fn($p) => $p->status instanceof \BackedEnum ? $p->status->value : $p->status;
-
-                        $completed = $projects->filter(fn($p) => $getStatus($p) === 'completed')->count();
-                        $inProgress = $projects->filter(fn($p) => $getStatus($p) === 'in_progress')->count();
-                        $pending = $projects->filter(fn($p) => in_array($getStatus($p), ['hold', 'on_hold', 'pending']))->count();
-                        $cancelled = $projects->filter(fn($p) => $getStatus($p) === 'cancelled')->count();
-
-                        return "{$completed} Complete, {$inProgress} In Progress, <br> {$pending} Pending, {$cancelled} Cancelled";
-                    })
-                    ->color('gray')
-                    ->size(TextSize::Small) 
-                    ->wrap(), 
+                    ->sortable(),
 
                 TextColumn::make('total_contract')
                     ->label('Contract Value')
@@ -137,7 +121,7 @@ class ClientInsights extends Page implements HasTable
                     ->money('IDR', locale: 'id'),
 
                 TextColumn::make('total_paid')
-                    ->label('Paid Revenue')
+                    ->label('Paid Invoices')
                     ->sortable()
                     ->money('IDR', locale: 'id')
                     ->color('success'),
@@ -160,7 +144,7 @@ class ClientInsights extends Page implements HasTable
                     ->label('View Projects')
                     ->icon('heroicon-m-eye')
                     ->modalHeading(fn(Client $record) => "Projects: {$record->client_name}")
-                    ->modalWidth('full')
+                    ->modalWidth('6xl')
                     ->modalSubmitAction(false)
                     ->modalCancelAction(fn ($action) => $action->label('Close'))
                     ->modalContent(fn (Client $record) => view('filament.pages.partials.modal-wrapper', [

@@ -26,6 +26,8 @@ class ProjectForm
                     ->maxLength(255),
                 Textarea::make('description')
                     ->columnSpanFull(),
+                DatePicker::make('start_date'),
+                DatePicker::make('deadline'),
                 DatePicker::make('contract_date'),
                 TextInput::make('contract_number')
                     ->maxLength(100),
@@ -38,8 +40,6 @@ class ProjectForm
                     ->options(ProjectStatus::class)
                     ->required()
                     ->default('pending'),
-                DatePicker::make('start_date'),
-                DatePicker::make('deadline'),
             ]);
     }
 }
