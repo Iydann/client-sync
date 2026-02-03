@@ -9,8 +9,6 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-use function Laravel\Prompts\progress;
-
 class ProjectsTable
 {
     public static function configure(Table $table): Table
@@ -57,7 +55,8 @@ class ProjectsTable
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
+                ViewAction::make()
+                    ->url(fn ($record) => route('filament.admin.resources.projects.view', ['record' => $record->id])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

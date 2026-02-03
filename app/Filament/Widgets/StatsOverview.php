@@ -67,15 +67,10 @@ class StatsOverview extends StatsOverviewWidget
 
         $totalProjects = $this->applyFilters(Project::query(), 'contract_date')->count();
         
-        $activeProjectsQuery = Project::where('status', 'in_progress');
-        if ($isClient) {
-            $activeProjectsQuery->where('client_id', Auth::user()->client?->id);
-        }
-        $activeProjects = $activeProjectsQuery
-            ->when($this->year !== 'all', fn($q) => $q->whereYear('contract_date', $this->year))
-            ->count();
-            
-        $inactiveProjects = $totalProjects - $activeProjects;
+        $completedProjects = $this->applyFilters(Project::where('status', 'completed'), 'contract_date')->count();
+        $inProgressProjects = $this->applyFilters(Project::where('status', 'in_progress'), 'contract_date')->count();
+        $pendingProjects = $this->applyFilters(Project::where('status', 'pending'), 'contract_date')->count();
+        $cancelledProjects = $this->applyFilters(Project::where('status', 'cancelled'), 'contract_date')->count();
 
         $totalContractedValue = $this->applyFilters(Project::query(), 'contract_date')->sum('contract_value');
         $totalPaidInvoices = $this->applyFilters(Invoice::where('status', 'paid'), 'due_date')->sum('amount');
@@ -87,19 +82,30 @@ class StatsOverview extends StatsOverviewWidget
         $formatRp = fn($num) => 'IDR ' . number_format($num, 0, ',', '.');
 
         $projectDescription = new HtmlString(sprintf(
-            '<div style="margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6;">
-                <span class="text-info-600">Active: %s</span><br>
-                <span class="text-gray-500">Inactive: %s</span>
+            '<div style="width: 100%%; min-width: 280px; display: flex; justify-content: space-between; align-items: flex-start; margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6;">
+                
+                <div style="text-align: left;">
+                    <div class="text-600">Completed: %s</div>
+                    <div class="text-600">Pending: %s</div>
+                </div>
+
+                <div style="text-align: left;">
+                    <div class="text-600 whitespace-nowrap">In Progress: %s</div>
+                    <div class="text-600 whitespace-nowrap">Cancelled: %s</div>
+                </div>
+
             </div>',
-            number_format($activeProjects, 0, ',', '.'),
-            number_format($inactiveProjects, 0, ',', '.')
+            number_format($completedProjects, 0, ',', '.'),
+            number_format($pendingProjects, 0, ',', '.'),
+            number_format($inProgressProjects, 0, ',', '.'),
+            number_format($cancelledProjects, 0, ',', '.')
         ));
 
         $financeDescription = new HtmlString(sprintf(
             '<div style="margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6;">
-                <span class="text-success-600">Paid: %s</span><br>
-                <span class="text-danger-600">Unpaid: %s</span><br>
-                <span class="text-warning-600">Uninvoiced: %s</span>
+                <span class="text-600">Paid: %s</span><br>
+                <span class="text-600">Unpaid: %s</span><br>
+                <span class="text-600">Uninvoiced: %s</span>
             </div>',
             number_format($totalPaidInvoices, 0, ',', '.'),
             number_format($totalUnpaidInvoices, 0, ',', '.'),
@@ -108,7 +114,7 @@ class StatsOverview extends StatsOverviewWidget
         
         $card1 = Stat::make('Total Projects', $totalProjects)
             ->description($projectDescription)
-            ->chart([$totalProjects, $activeProjects]) 
+            ->chart([$completedProjects, $inProgressProjects, $pendingProjects, $cancelledProjects]) 
             ->icon('heroicon-o-rectangle-stack')
             ->color('info');
 
@@ -131,8 +137,8 @@ class StatsOverview extends StatsOverviewWidget
 
             $clientDescription = new HtmlString(sprintf(
                 '<div style="margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6;">
-                    <span class="text-primary-600">Individual: %s</span><br>
-                    <span class="text-primary-600">Organization: %s</span>
+                    <span class="text-600">Individual: %s</span><br>
+                    <span class="text-600">Organization: %s</span>
                 </div>',
                 number_format($totalIndividualClients, 0, ',', '.'),
                 number_format($totalOrganizationClients, 0, ',', '.')

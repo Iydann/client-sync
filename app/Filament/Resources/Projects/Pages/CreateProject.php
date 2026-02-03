@@ -7,10 +7,24 @@ use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\UserContribution;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class CreateProject extends CreateRecord
 {
     protected static string $resource = ProjectResource::class;
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        // Auto-fill client_id from query parameter
+        $clientId = request()->query('client_id');
+        if ($clientId) {
+            $this->form->fill([
+                'client_id' => $clientId,
+            ]);
+        }
+    }
 
     protected function handleRecordCreation(array $data): Model
     {
