@@ -29,5 +29,10 @@ class MilestoneSeeder extends Seeder
         Milestone::create(['project_id' => 4, 'name' => 'Development',        'is_completed' => true, 'order' => 2]);
         Milestone::create(['project_id' => 4, 'name' => 'Testing',            'is_completed' => true, 'order' => 3]);
         Milestone::create(['project_id' => 4, 'name' => 'Launch',             'is_completed' => true, 'order' => 4]);
+
+        // Project 6 - Client Portal Revamp (current)
+        Milestone::create(['project_id' => 6, 'name' => 'Discovery & Planning', 'is_completed' => true,  'order' => 1]);
+        Milestone::create(['project_id' => 6, 'name' => 'UI Redesign',          'is_completed' => false, 'order' => 2]);
+        Milestone::create(['project_id' => 6, 'name' => 'Reporting Module',     'is_completed' => false, 'order' => 3]);
     }
 }

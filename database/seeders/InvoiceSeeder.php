@@ -63,5 +63,22 @@ class InvoiceSeeder extends Seeder
             'status' => 'paid',
             'due_date' => now()->subDays(15),
         ]);
+
+        // Invoice untuk Project 6 (Current)
+        Invoice::create([
+            'project_id' => 6,
+            'invoice_number' => 'INV-2026-007',
+            'amount' => 12000000.00,
+            'status' => 'paid',
+            'due_date' => now()->subDays(2),
+        ]);
+
+        Invoice::create([
+            'project_id' => 6,
+            'invoice_number' => 'INV-2026-008',
+            'amount' => 8000000.00,
+            'status' => 'unpaid',
+            'due_date' => now()->addDays(20),
+        ]);
     }
 }

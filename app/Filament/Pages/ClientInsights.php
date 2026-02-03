@@ -48,12 +48,23 @@ class ClientInsights extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->recordAction('view_projects')
+            ->recordAction('view_details')
             ->query(fn () => 
                 Client::query()
+                    ->whereHas('projects', function (Builder $query) {
+                        if ($this->year && $this->year !== 'all') {
+                            $query->whereYear('contract_date', $this->year);
+                        }
+                    })
                     ->addSelect([
                         'total_contract' => \App\Models\Project::query()
                             ->selectRaw('COALESCE(SUM(contract_value), 0)')
+                            ->whereColumn('client_id', 'clients.id')
+                            ->when($this->year && $this->year !== 'all', fn($q) => $q->whereYear('contract_date', $this->year)),
+                    ])
+                    ->addSelect([
+                        'total_projects' => \App\Models\Project::query()
+                            ->selectRaw('COUNT(*)')
                             ->whereColumn('client_id', 'clients.id')
                             ->when($this->year && $this->year !== 'all', fn($q) => $q->whereYear('contract_date', $this->year)),
                     ])
@@ -105,14 +116,8 @@ class ClientInsights extends Page implements HasTable
                     ->weight(FontWeight::Bold)
                     ->sortable(),
 
-                TextColumn::make('projects_count')
+                TextColumn::make('total_projects')
                     ->label('Total Projects')
-                    ->counts('projects', function (Builder $query) {
-                        if ($this->year && $this->year !== 'all') {
-                            $query->whereYear('contract_date', $this->year);
-                        }
-                        return $query;
-                    })
                     ->sortable(),
 
                 TextColumn::make('total_contract')
@@ -140,8 +145,8 @@ class ClientInsights extends Page implements HasTable
                     ->weight(FontWeight::Medium),
             ])
             ->actions([
-                Action::make('view_projects')
-                    ->label('View Projects')
+                Action::make('view_details')
+                    ->label('View Details')
                     ->icon('heroicon-m-eye')
                     ->modalHeading(fn(Client $record) => "Projects: {$record->client_name}")
                     ->modalWidth('6xl')

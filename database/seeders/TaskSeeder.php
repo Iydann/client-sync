@@ -406,5 +406,68 @@ class TaskSeeder extends Seeder
             'order' => 3,
         ]);
         $task->contributors()->sync([3, 5]);
+
+        // Project 6 - Client Portal Revamp - Milestone 1 (Discovery & Planning)
+        $task = Task::create([
+            'milestone_id' => 12,
+            'user_id' => 4,
+            'name' => 'Audit existing portal',
+            'description' => 'Review alur dan temukan pain points pada portal saat ini',
+            'is_completed' => true,
+            'order' => 1,
+        ]);
+        $task->contributors()->sync([4, 5]);
+
+        $task = Task::create([
+            'milestone_id' => 12,
+            'user_id' => 5,
+            'name' => 'Define feature scope',
+            'description' => 'Menentukan scope fitur dan prioritas rilis',
+            'is_completed' => true,
+            'order' => 2,
+        ]);
+        $task->contributors()->sync([4, 5]);
+
+        // Project 6 - Client Portal Revamp - Milestone 2 (UI Redesign)
+        $task = Task::create([
+            'milestone_id' => 13,
+            'user_id' => 3,
+            'name' => 'Design new layout',
+            'description' => 'Membuat layout baru dan komponen UI utama',
+            'is_completed' => false,
+            'order' => 1,
+        ]);
+        $task->contributors()->sync([3, 4]);
+
+        $task = Task::create([
+            'milestone_id' => 13,
+            'user_id' => 3,
+            'name' => 'Build UI components',
+            'description' => 'Implementasi komponen UI di frontend',
+            'is_completed' => false,
+            'order' => 2,
+        ]);
+        $task->contributors()->sync([3]);
+
+        // Project 6 - Client Portal Revamp - Milestone 3 (Reporting Module)
+        $task = Task::create([
+            'milestone_id' => 14,
+            'user_id' => 4,
+            'name' => 'Define reporting metrics',
+            'description' => 'Menentukan metrik dan data yang ditampilkan di report',
+            'is_completed' => false,
+            'order' => 1,
+        ]);
+        $task->contributors()->sync([4, 5]);
+
+        $task = Task::create([
+            'milestone_id' => 14,
+            'user_id' => 4,
+            'name' => 'Implement report API',
+            'description' => 'Membuat endpoint API untuk data laporan',
+            'is_completed' => false,
+            'order' => 2,
+        ]);
+        $task->contributors()->sync([4]);
     }
 }

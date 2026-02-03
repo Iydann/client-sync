@@ -6,6 +6,7 @@ use App\Mail\InvoiceMail;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -62,6 +63,7 @@ class InvoicesTable
                 //
             ])
             ->actions([
+                ViewAction::make(),
                 self::sendInvoiceAction(),
             ])
             ->bulkActions([
