@@ -39,6 +39,10 @@ class ClientsTable
                 TextColumn::make('user.email')
                     ->label('Email')
                     ->searchable(),
+                // client type
+                TextColumn::make('client_type')
+                    ->label('Type')
+                    ->badge(),
 
                 TextColumn::make('phone')->searchable(),
                 TextColumn::make('address')->limit(50)->toggleable(),
