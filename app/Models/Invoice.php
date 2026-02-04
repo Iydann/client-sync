@@ -82,11 +82,32 @@ class Invoice extends Model
         // Capture tax snapshot from project when creating invoice
         static::creating(function (Invoice $invoice) {
             if ($invoice->project) {
-                $invoice->ppn_rate = $invoice->project->ppn_rate;
-                $invoice->pph_rate = $invoice->project->pph_rate;
-                $invoice->ppn_amount = $invoice->project->ppn_amount;
-                $invoice->pph_amount = $invoice->project->pph_amount;
-                $invoice->include_tax = $invoice->project->include_tax;
+                if ($invoice->ppn_rate === null) {
+                    $invoice->ppn_rate = $invoice->project->ppn_rate;
+                }
+                if ($invoice->pph_rate === null) {
+                    $invoice->pph_rate = $invoice->project->pph_rate;
+                }
+                if ($invoice->include_tax === null) {
+                    $invoice->include_tax = $invoice->project->include_tax;
+                }
+            }
+
+            $ppnRate = (float) ($invoice->ppn_rate ?? 0);
+            $pphRate = (float) ($invoice->pph_rate ?? 0);
+            $amount = (float) ($invoice->amount ?? 0);
+            $includeTax = (bool) ($invoice->include_tax ?? false);
+
+            if ($amount > 0 && ($invoice->ppn_amount === null || $invoice->pph_amount === null)) {
+                if ($includeTax) {
+                    $totalTaxPercent = ($ppnRate + $pphRate) / 100;
+                    $subtotal = $totalTaxPercent > 0 ? ($amount / (1 + $totalTaxPercent)) : $amount;
+                    $invoice->ppn_amount = round($subtotal * $ppnRate / 100, 0);
+                    $invoice->pph_amount = round($subtotal * $pphRate / 100, 0);
+                } else {
+                    $invoice->ppn_amount = round($amount * $ppnRate / 100, 0);
+                    $invoice->pph_amount = round($amount * $pphRate / 100, 0);
+                }
             }
         });
 

@@ -15,16 +15,32 @@
             <td style="padding: 8px 12px; border: 1px solid #ddd;">{{ $invoice->invoice_number }}</td>
         </tr>
         <tr>
-            <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">Amount</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">Project</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd;">{{ $invoice->project->title }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">Invoice Amount</td>
             <td style="padding: 8px 12px; border: 1px solid #ddd;">IDR {{ number_format($invoice->amount, 0, ',', '.') }}</td>
         </tr>
+        @if($invoice->ppn_rate > 0)
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">PPN ({{ number_format($invoice->ppn_rate, 2) }}%)</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd;">IDR {{ number_format($invoice->ppn_amount, 0, ',', '.') }}</td>
+        </tr>
+        @endif
+        @if($invoice->pph_rate > 0)
+        <tr>
+            <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">PPH ({{ number_format($invoice->pph_rate, 2) }}%)</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd;">IDR {{ number_format($invoice->pph_amount, 0, ',', '.') }}</td>
+        </tr>
+        @endif
         <tr>
             <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">Due Date</td>
             <td style="padding: 8px 12px; border: 1px solid #ddd;">{{ $invoice->due_date->format('d F Y') }}</td>
         </tr>
         <tr>
             <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">Status</td>
-            <td style="padding: 8px 12px; border: 1px solid #ddd;">{{ $invoice->status->value }}</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd;">{{ $invoice->status->getLabel() }}</td>
         </tr>
     </table>
 

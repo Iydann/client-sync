@@ -387,22 +387,38 @@
                 <table class="totals-table">
                     <tr>
                         <td class="label">Subtotal</td>
-                        <td class="value">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
+                        <td class="value">
+                            @if($invoice->include_tax)
+                                Rp {{ number_format($invoice->amount - $invoice->ppn_amount - $invoice->pph_amount, 0, ',', '.') }}
+                            @else
+                                Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                            @endif
+                        </td>
                     </tr>
+                    @if($invoice->ppn_rate > 0)
                     <tr>
-                        <td class="label">Tax (0%)</td>
-                        <td class="value">Rp 0</td>
+                        <td class="label">PPN ({{ number_format($invoice->ppn_rate, 2) }}%)</td>
+                        <td class="value">Rp {{ number_format($invoice->ppn_amount, 0, ',', '.') }}</td>
                     </tr>
+                    @endif
+                    @if($invoice->pph_rate > 0)
                     <tr>
-                        <td class="label">Discount</td>
-                        <td class="value">Rp 0</td>
+                        <td class="label">PPH ({{ number_format($invoice->pph_rate, 2) }}%)</td>
+                        <td class="value">Rp {{ number_format($invoice->pph_amount, 0, ',', '.') }}</td>
                     </tr>
+                    @endif
                     <tr>
                         <td colspan="2" style="padding: 5px;"></td>
                     </tr>
                     <tr class="total-final">
                         <td class="label" style="color: white;">Total</td>
-                        <td class="value" style="color: white;">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
+                        <td class="value" style="color: white;">
+                            @if($invoice->include_tax)
+                                Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                            @else
+                                Rp {{ number_format($invoice->amount + $invoice->ppn_amount + $invoice->pph_amount, 0, ',', '.') }}
+                            @endif
+                        </td>
                     </tr>
                 </table>
             </td>
