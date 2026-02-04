@@ -72,7 +72,8 @@ class UserForm
                             ->label('Client Type')
                             ->options([
                                 ClientType::Individual->value => ClientType::Individual->getLabel(),
-                                ClientType::Organization->value => ClientType::Organization->getLabel(),
+                                ClientType::Corporate->value => ClientType::Corporate->getLabel(),
+                                ClientType::Government->value => ClientType::Government->getLabel(),
                             ])
                             ->required()
                             ->native(false),

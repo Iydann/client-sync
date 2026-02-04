@@ -16,6 +16,11 @@ class Invoice extends Model
         'status',
         'due_date',
         'sent_at',
+        'ppn_rate',
+        'pph_rate',
+        'ppn_amount',
+        'pph_amount',
+        'include_tax',
     ];
 
     protected $casts = [
@@ -23,6 +28,11 @@ class Invoice extends Model
         'amount' => 'decimal:0',
         'status' => InvoiceStatus::class,
         'sent_at' => 'datetime',
+        'ppn_rate' => 'decimal:2',
+        'pph_rate' => 'decimal:2',
+        'ppn_amount' => 'decimal:0',
+        'pph_amount' => 'decimal:0',
+        'include_tax' => 'boolean',
     ];
 
     // generate invoice number
@@ -69,6 +79,17 @@ class Invoice extends Model
 
     protected static function booted(): void
     {
+        // Capture tax snapshot from project when creating invoice
+        static::creating(function (Invoice $invoice) {
+            if ($invoice->project) {
+                $invoice->ppn_rate = $invoice->project->ppn_rate;
+                $invoice->pph_rate = $invoice->project->pph_rate;
+                $invoice->ppn_amount = $invoice->project->ppn_amount;
+                $invoice->pph_amount = $invoice->project->pph_amount;
+                $invoice->include_tax = $invoice->project->include_tax;
+            }
+        });
+
         static::saved(function (Invoice $invoice) {
             $invoice->project->updatePaymentProgress();
         });

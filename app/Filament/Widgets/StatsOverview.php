@@ -133,22 +133,25 @@ class StatsOverview extends StatsOverviewWidget
         } else {
             $totalClients = $this->applyFilters(Client::query(), 'created_at')->count();
             $totalIndividualClients = $this->applyFilters(Client::where('client_type', 'individual'), 'created_at')->count();
-            $totalOrganizationClients = $this->applyFilters(Client::where('client_type', 'organization'), 'created_at')->count();
+            $totalCorporateClients = $this->applyFilters(Client::where('client_type', 'corporate'), 'created_at')->count();
+            $totalGovernmentClients = $this->applyFilters(Client::where('client_type', 'government'), 'created_at')->count();
 
             $clientDescription = new HtmlString(sprintf(
                 '<div style="margin-top: 0.5rem; font-size: 0.95rem; line-height: 1.6;">
                     <span class="text-600">Individual: %s</span><br>
-                    <span class="text-600">Organization: %s</span>
+                    <span class="text-600">Corporate: %s</span><br>
+                    <span class="text-600">Government: %s</span>
                 </div>',
                 number_format($totalIndividualClients, 0, ',', '.'),
-                number_format($totalOrganizationClients, 0, ',', '.')
+                number_format($totalCorporateClients, 0, ',', '.'),
+                number_format($totalGovernmentClients, 0, ',', '.')
             ));
 
             $card2 = Stat::make('Total Clients', $totalClients)
                 ->description($clientDescription)
                 ->icon('heroicon-o-users')
                 ->color('primary')
-                ->chart([$totalIndividualClients, $totalOrganizationClients]);
+                ->chart([$totalIndividualClients, $totalCorporateClients, $totalGovernmentClients]);
         }
 
         return [$card1, $card2, $card3];

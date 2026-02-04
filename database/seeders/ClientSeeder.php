@@ -16,7 +16,7 @@ class ClientSeeder extends Seeder
         Client::create([
             'user_id' => 4, // Budi
             'client_name' => 'Maju Bersama',
-            'client_type' => 'organization',
+            'client_type' => 'corporate',
             'phone' => '081234567890',
             'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
         ]);
@@ -24,7 +24,7 @@ class ClientSeeder extends Seeder
         Client::create([
             'user_id' => 5, // Siti
             'client_name' => 'Sejahtera Jaya',
-            'client_type' => 'organization',
+            'client_type' => 'corporate',
             'phone' => '082345678901',
             'address' => 'Jl. Gatot Subroto No. 45, Bandung',
         ]);
@@ -32,7 +32,7 @@ class ClientSeeder extends Seeder
         Client::create([
             'user_id' => 6, // Ahmad
             'client_name' => 'Berkah Mandiri',
-            'client_type' => 'organization',
+            'client_type' => 'government',
             'phone' => '083456789012',
             'address' => 'Jl. Ahmad Yani No. 78, Surabaya',
         ]);

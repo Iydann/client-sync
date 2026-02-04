@@ -5,13 +5,15 @@ namespace App;
 enum ClientType: string
 {
     case Individual = 'individual';
-    case Organization = 'organization';
+    case Corporate = 'corporate';
+    case Government = 'government';
 
     public function getLabel(): string
     {
         return match($this) {
             self::Individual => 'Individual',
-            self::Organization => 'Organization',
+            self::Corporate => 'Corporate',
+            self::Government => 'Government',
         };
     }
 }
