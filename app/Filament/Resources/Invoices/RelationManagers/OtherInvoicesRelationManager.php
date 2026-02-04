@@ -60,7 +60,9 @@ class OtherInvoicesRelationManager extends RelationManager
             ])
             ->actions([
                 ViewAction::make()
-                    ->hidden(fn ($record, RelationManager $livewire) => $record->is($livewire->getOwnerRecord())),
+                    ->label(fn ($record) => $record->is($this->getOwnerRecord()) ? 'Viewed' : 'View')
+                    ->color('gray')
+                    ->disabled(fn ($record) => $record->is($this->getOwnerRecord())),
                 InvoicesTable::sendInvoiceAction(),
             ])
             ->bulkActions([

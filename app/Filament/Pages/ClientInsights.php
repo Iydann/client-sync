@@ -146,8 +146,9 @@ class ClientInsights extends Page implements HasTable
             ])
             ->actions([
                 Action::make('view_details')
-                    ->label('View Details')
+                    ->label('View')
                     ->icon('heroicon-m-eye')
+                    ->color('gray')
                     ->modalHeading(fn(Client $record) => "Projects: {$record->client_name}")
                     ->modalWidth('6xl')
                     ->modalSubmitAction(false)

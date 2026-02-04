@@ -14,6 +14,7 @@ class Project extends Model implements HasMedia
 
     protected $fillable = [
         'client_id',
+        'parent_project_id',
         'title',
         'description',
         'contract_value',
@@ -62,6 +63,29 @@ class Project extends Model implements HasMedia
     // Relationships
     public function client() {
         return $this->belongsTo(Client::class);
+    }
+    
+    public function parentProject() {
+        return $this->belongsTo(Project::class, 'parent_project_id');
+    }
+    
+    public function childProjects() {
+        return $this->hasMany(Project::class, 'parent_project_id');
+    }
+    
+    public function relatedProjects()
+    {
+        // Get the root parent project
+        $rootParent = $this->parentProject ?? $this;
+        
+        // Get all projects linked to this root parent (children + parent itself if this is child)
+        return Project::where(function ($query) use ($rootParent) {
+            $query->where('id', $rootParent->id)
+                  ->orWhere('parent_project_id', $rootParent->id);
+        })
+        ->where('client_id', $this->client_id)
+        ->orderBy('parent_project_id')
+        ->orderBy('created_at');
     }
     
     public function milestones() {
