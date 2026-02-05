@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Projects\RelationManagers;
 
+use App\ProjectStatus;
 use Filament\Actions\AttachAction;
 use Filament\Actions\DetachAction;
 use Filament\Actions\DetachBulkAction;
@@ -43,6 +44,9 @@ class MembersRelationManager extends RelationManager
                         return $query->whereHas('roles', function ($q) {
                             $q->where('name', 'developer');
                         });
+                    })
+                    ->after(function () {
+                        $this->updateProjectStatusIfPending();
                     }),
             ])
             ->recordActions([
@@ -60,7 +64,20 @@ class MembersRelationManager extends RelationManager
                         return $query->whereHas('roles', function ($q) {
                             $q->where('name', 'developer');
                         });
+                    })
+                    ->after(function () {
+                        $this->updateProjectStatusIfPending();
                     }),
             ]);
+    }
+
+    private function updateProjectStatusIfPending(): void
+    {
+        $project = $this->ownerRecord;
+        if ($project?->status === ProjectStatus::Pending) {
+            $project->updateQuietly(['status' => ProjectStatus::InProgress]);
+            $this->ownerRecord->refresh();
+            $this->dispatch('project-status-updated');
+        }
     }
 }

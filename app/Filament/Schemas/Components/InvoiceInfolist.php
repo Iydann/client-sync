@@ -48,8 +48,7 @@ class InvoiceInfolist
                                         ->label('Due Date')
                                         ->date('d F Y'),
                                     
-                                    // Tax Breakdown Section
-                                    Section::make('Payment Breakdown')
+                                    Section::make('Payment')
                                         ->columnSpan('full')
                                         ->columns(2)
                                         ->schema([

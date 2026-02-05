@@ -13,6 +13,10 @@ class EditProject extends EditRecord
 {
     protected static string $resource = ProjectResource::class;
 
+    protected $listeners = [
+        'project-status-updated' => 'refreshProjectStatus',
+    ];
+
     protected function mutateFormDataBeforeSave(array $data): array
     {
         // Catat kontribusi user (update project)
@@ -44,6 +48,12 @@ class EditProject extends EditRecord
                 'updated_at' => now(),
             ]);
         }
+    }
+
+    public function refreshProjectStatus(): void
+    {
+        $this->getRecord()->refresh();
+        $this->fillForm();
     }
 
     protected function getHeaderActions(): array

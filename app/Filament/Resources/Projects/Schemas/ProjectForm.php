@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Projects\Schemas;
 
+use App\Models\Client;
+use App\Models\Project;
 use App\ProjectStatus;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -24,7 +26,21 @@ class ProjectForm
                     ->preload()
                     ->required()
                     ->label('Client')
-                    ->live(),
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if (!$state) {
+                            return;
+                        }
+
+                        $client = Client::find($state);
+                        if (!$client) {
+                            return;
+                        }
+
+                        $rates = Project::getDefaultTaxRatesByClientType($client->client_type?->value ?? $client->client_type);
+                        $set('ppn_rate', $rates['ppn_rate']);
+                        $set('pph_rate', $rates['pph_rate']);
+                    }),
                 TextInput::make('title')
                     ->required()
                     ->maxLength(255),
