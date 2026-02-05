@@ -65,8 +65,7 @@ class OtherProjectsRelationManager extends RelationManager
                 TextColumn::make('title')
                     ->label('Title')
                     ->searchable()
-                    ->sortable()
-                    ->description(fn ($record) => $record->description ? Str::limit($record->description, 20) : null),
+                    ->sortable(),
                 
                 TextColumn::make('contract_date')
                     ->label('Contract Date')
@@ -239,7 +238,7 @@ class OtherProjectsRelationManager extends RelationManager
         $siblingCount = $parentProject->childProjects()->count();
         
         // Generate new title with increment
-        return "{$baseTitle} - Continuous " . ($siblingCount + 1);
+        return "{$baseTitle} - #" . ($siblingCount + 2);
     }
 
     private function getRelationTabKey(): string|int

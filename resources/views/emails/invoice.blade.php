@@ -19,8 +19,8 @@
             <td style="padding: 8px 12px; border: 1px solid #ddd;">{{ $invoice->project->title }}</td>
         </tr>
         <tr>
-            <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">Invoice Amount</td>
-            <td style="padding: 8px 12px; border: 1px solid #ddd;">IDR {{ number_format($invoice->amount, 0, ',', '.') }}</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">Project Payment</td>
+            <td style="padding: 8px 12px; border: 1px solid #ddd;">IDR {{ number_format($invoice->amount - $invoice->ppn_amount - $invoice->pph_amount, 0, ',', '.') }}</td>
         </tr>
         @if($invoice->ppn_rate > 0)
         <tr>

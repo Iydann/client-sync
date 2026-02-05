@@ -29,7 +29,21 @@ class MilestoneResource extends Resource
 
     public static function canAccess(): bool
     {
-        return false;
+        // Allow access only if coming from a relation manager (has project_id in URL)
+        $request = request();
+        $milestonId = $request->route('record');
+        
+        if (!$milestonId) {
+            return false;
+        }
+
+        $milestone = Milestone::find($milestonId);
+        if (!$milestone) {
+            return false;
+        }
+
+        // Check if user can view the associated project
+        return auth()->user()?->can('view', $milestone->project) ?? false;
     }
 
     public static function form(Schema $schema): Schema

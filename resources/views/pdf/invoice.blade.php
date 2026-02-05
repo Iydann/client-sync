@@ -407,7 +407,7 @@
                         <td colspan="2" style="padding: 5px;"></td>
                     </tr>
                     <tr class="total-final">
-                        <td class="label" style="color: white;">Grand Total</td>
+                        <td class="label" style="color: white;">Total</td>
                         <td class="value" style="color: white;">
                             Rp {{ number_format($invoice->amount, 0, ',', '.') }}
                         </td>
