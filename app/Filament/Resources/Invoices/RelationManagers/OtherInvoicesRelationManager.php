@@ -28,7 +28,9 @@ class OtherInvoicesRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('invoice_number')
-            ->recordAction('view')
+            ->recordUrl(fn ($record) => $record->is($this->getOwnerRecord()) 
+                ? null 
+                : InvoiceResource::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('invoice_number')
                     ->searchable()
