@@ -39,9 +39,6 @@ class InvoiceInfolist
                                                 ->search($record->id) + 1;
                                             return "#{$position}";
                                         }),
-                                    TextEntry::make('amount')
-                                        ->label('Amount')
-                                        ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.')),
                                     TextEntry::make('status')
                                         ->label('Status')
                                         ->badge()
@@ -50,6 +47,31 @@ class InvoiceInfolist
                                     TextEntry::make('due_date')
                                         ->label('Due Date')
                                         ->date('d F Y'),
+                                    
+                                    // Tax Breakdown Section
+                                    Section::make('Payment Breakdown')
+                                        ->columnSpan('full')
+                                        ->columns(2)
+                                        ->schema([
+                                            TextEntry::make('amount')
+                                                ->label('Project Payment')
+                                                ->formatStateUsing(function ($record) {
+                                                    $subtotal = $record->amount - $record->ppn_amount - $record->pph_amount;
+                                                    return 'Rp ' . number_format($subtotal, 0, ',', '.');
+                                                }),
+                                            TextEntry::make('ppn_amount')
+                                                ->label(fn ($record) => 'PPN (' . number_format($record->ppn_rate, 2) . '%)')
+                                                ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                                                ->hidden(fn ($record) => $record->ppn_rate == 0),
+                                            TextEntry::make('pph_amount')
+                                                ->label(fn ($record) => 'PPH (' . number_format($record->pph_rate, 2) . '%)')
+                                                ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                                                ->hidden(fn ($record) => $record->pph_rate == 0),
+                                            TextEntry::make('amount')
+                                                ->label('Grand Total (Amount Pay)')
+                                                ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
+                                                ->weight('bold'),
+                                        ]),
                                 ]),
                             Actions::make([
                                 Action::make('download_pdf')

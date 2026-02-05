@@ -50,7 +50,7 @@ class ProjectForm
                 Section::make('Tax Configuration')
                     ->description('Configure PPN and PPH rates for this project')
                     ->collapsible()
-                    ->collapsed()
+                    // ->collapsed()
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([

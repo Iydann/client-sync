@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Invoices\Tables;
 
 use App\Mail\InvoiceMail;
+use App\Filament\Resources\Invoices\InvoiceResource;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\Action;
@@ -63,7 +64,8 @@ class InvoicesTable
                 //
             ])
             ->actions([
-                ViewAction::make(),
+                ViewAction::make()
+                    ->url(fn ($record) => InvoiceResource::getUrl('view', ['record' => $record])),
                 self::sendInvoiceAction(),
             ])
             ->bulkActions([

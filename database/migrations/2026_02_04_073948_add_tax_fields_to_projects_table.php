@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('projects', function (Blueprint $table) {
             // Tax configuration
-            $table->boolean('include_tax')->default(false)->after('deadline')->comment('Whether contract_value includes tax');
+            $table->boolean('include_tax')->default(true)->after('deadline')->comment('Whether contract_value includes tax');
             $table->decimal('ppn_rate', 5, 2)->default(11.00)->after('include_tax')->comment('PPN rate percentage');
             $table->decimal('pph_rate', 5, 2)->default(2.50)->after('ppn_rate')->comment('PPH rate percentage');
             

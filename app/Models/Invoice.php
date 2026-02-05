@@ -99,15 +99,12 @@ class Invoice extends Model
             $includeTax = (bool) ($invoice->include_tax ?? false);
 
             if ($amount > 0 && ($invoice->ppn_amount === null || $invoice->pph_amount === null)) {
-                if ($includeTax) {
-                    $totalTaxPercent = ($ppnRate + $pphRate) / 100;
-                    $subtotal = $totalTaxPercent > 0 ? ($amount / (1 + $totalTaxPercent)) : $amount;
-                    $invoice->ppn_amount = round($subtotal * $ppnRate / 100, 0);
-                    $invoice->pph_amount = round($subtotal * $pphRate / 100, 0);
-                } else {
-                    $invoice->ppn_amount = round($amount * $ppnRate / 100, 0);
-                    $invoice->pph_amount = round($amount * $pphRate / 100, 0);
-                }
+                $totalTaxPercent = ($ppnRate + $pphRate) / 100;
+                
+                $subtotal = $totalTaxPercent > 0 ? ($amount / (1 + $totalTaxPercent)) : $amount;
+                
+                $invoice->ppn_amount = round($subtotal * $ppnRate / 100, 0);
+                $invoice->pph_amount = round($subtotal * $pphRate / 100, 0);
             }
         });
 

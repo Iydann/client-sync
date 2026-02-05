@@ -83,6 +83,53 @@ class ProjectInfolist
                             ->html()
                             ->columnSpanFull(),
                     ]),
+                Section::make('Contract Value Details')
+                    ->description(fn ($record) => $record->include_tax ? 'Contract value includes tax' : 'Contract value excludes tax')
+                    ->columns(3)
+                    ->columnSpanFull()
+                    ->schema([
+                        TextEntry::make('project_payment')
+                            ->label('Project Payment')
+                            ->getStateUsing(function ($record) {
+                                $contractValue = (float) ($record->contract_value ?? 0);
+                                $includeTax = (bool) ($record->include_tax ?? false);
+                                $ppnAmount = (float) ($record->ppn_amount ?? 0);
+                                $pphAmount = (float) ($record->pph_amount ?? 0);
+                                $subtotal = $includeTax
+                                    ? ($contractValue - $ppnAmount - $pphAmount)
+                                    : $contractValue;
+
+                                return 'Rp ' . number_format($subtotal, 0, ',', '.');
+                            }),
+                        TextEntry::make('ppn_amount')
+                            ->label(fn ($record) => 'PPN (' . number_format($record->ppn_rate ?? 0, 2) . '%)')
+                            ->getStateUsing(function ($record) {
+                                $ppnAmount = (float) ($record->ppn_amount ?? 0);
+                                return 'Rp ' . number_format($ppnAmount, 0, ',', '.');
+                            })
+                            ->hidden(fn ($record) => $record->ppn_rate == 0),
+                        TextEntry::make('pph_amount')
+                            ->label(fn ($record) => 'PPH (' . number_format($record->pph_rate ?? 0, 2) . '%)')
+                            ->getStateUsing(function ($record) {
+                                $pphAmount = (float) ($record->pph_amount ?? 0);
+                                return 'Rp ' . number_format($pphAmount, 0, ',', '.');
+                            })
+                            ->hidden(fn ($record) => $record->pph_rate == 0),
+                        TextEntry::make('grand_total')
+                            ->label('Grand Total')
+                            ->getStateUsing(function ($record) {
+                                $contractValue = (float) ($record->contract_value ?? 0);
+                                $includeTax = (bool) ($record->include_tax ?? false);
+                                $ppnAmount = (float) ($record->ppn_amount ?? 0);
+                                $pphAmount = (float) ($record->pph_amount ?? 0);
+                                $grandTotal = $includeTax
+                                    ? $contractValue
+                                    : ($contractValue + $ppnAmount + $pphAmount);
+
+                                return 'Rp ' . number_format($grandTotal, 0, ',', '.');
+                            })
+                            ->weight('bold'),
+                    ]),
             ]);
     }
 }
