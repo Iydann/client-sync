@@ -47,10 +47,6 @@ class MilestonesRelationManager extends RelationManager
                     ->openable()
                     ->maxFiles(5)
                     ->label('Attachments'),
-
-                Toggle::make('is_completed')
-                    ->label('Completed')
-                    ->default(false),
             ]);
     }
 

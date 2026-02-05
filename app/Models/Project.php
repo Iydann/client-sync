@@ -18,6 +18,7 @@ class Project extends Model implements HasMedia
         'title',
         'description',
         'contract_value',
+        'grand_total',
         'progress',
         'payment_progress',
         'contract_date',
@@ -37,6 +38,7 @@ class Project extends Model implements HasMedia
         'start_date' => 'date',
         'deadline' => 'date',
         'contract_value' => 'decimal:0',
+        'grand_total' => 'decimal:0',
         'contract_date' => 'date',
         'include_tax' => 'boolean',
         'ppn_rate' => 'decimal:2',
@@ -63,10 +65,32 @@ class Project extends Model implements HasMedia
      */
     public function getGrandTotalAttribute(): int|float
     {
-        if ($this->include_tax) {
-            return $this->contract_value;
+        $stored = $this->attributes['grand_total'] ?? null;
+        if (!is_null($stored) && (float) $stored > 0) {
+            return (float) $stored;
         }
-        return round($this->contract_value + $this->ppn_amount + $this->pph_amount, 2);
+
+        $contractValue = (float) ($this->contract_value ?? 0);
+        if ($this->include_tax) {
+            return $contractValue;
+        }
+
+        return $contractValue + (float) ($this->ppn_amount ?? 0) + (float) ($this->pph_amount ?? 0);
+    }
+
+    private function resolveGrandTotal(): float
+    {
+        $stored = (float) ($this->grand_total ?? 0);
+        if ($stored > 0) {
+            return $stored;
+        }
+
+        $contractValue = (float) ($this->contract_value ?? 0);
+        if ($this->include_tax) {
+            return $contractValue;
+        }
+
+        return $contractValue + (float) ($this->ppn_amount ?? 0) + (float) ($this->pph_amount ?? 0);
     }
 
     /**
@@ -108,10 +132,12 @@ class Project extends Model implements HasMedia
             
             $this->ppn_amount = round($subtotal * $this->ppn_rate / 100, 2);
             $this->pph_amount = round($subtotal * $this->pph_rate / 100, 2);
+            $this->grand_total = $this->contract_value;
         } else {
             // If contract_value is before tax, calculate amounts from it
             $this->ppn_amount = round($this->contract_value * $this->ppn_rate / 100, 2);
             $this->pph_amount = round($this->contract_value * $this->pph_rate / 100, 2);
+            $this->grand_total = $this->contract_value + $this->ppn_amount + $this->pph_amount;
         }
     }
 
@@ -130,14 +156,22 @@ class Project extends Model implements HasMedia
     
     public function updatePaymentProgress(): void
     {
-        if ($this->contract_value == 0) {
+        $grandTotal = $this->resolveGrandTotal();
+
+        if ($grandTotal == 0) {
             $this->updateQuietly(['payment_progress' => 0]);
             return;
         }
 
         $paidAmount = $this->invoices()->where('status', 'paid')->sum('amount');
-        $paymentProgressPercentage = round(($paidAmount / $this->contract_value) * 100);
-        $this->updateQuietly(['payment_progress' => $paymentProgressPercentage]);
+        $paymentProgressPercentage = round(($paidAmount / $grandTotal) * 100);
+        
+        $update = ['payment_progress' => $paymentProgressPercentage];
+        if ((float) ($this->grand_total ?? 0) === 0.0 && $grandTotal > 0) {
+            $update['grand_total'] = $grandTotal;
+        }
+
+        $this->updateQuietly($update);
     }
 
     // Relationships
@@ -190,7 +224,7 @@ class Project extends Model implements HasMedia
         });
 
         static::updated(function (Project $project) {
-            if ($project->wasChanged('contract_value')) {
+            if ($project->wasChanged('contract_value') || $project->wasChanged('include_tax')) {
                 $project->updatePaymentProgress();
             }
         });

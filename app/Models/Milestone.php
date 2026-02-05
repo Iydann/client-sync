@@ -31,9 +31,29 @@ class Milestone extends Model implements HasMedia
         return $this->hasMany(Task::class);
     }
 
+    /**
+     * Update milestone completion status based on task progress
+     */
+    public function updateCompletion(): void
+    {
+        $totalTasks = $this->tasks()->count();
+        
+        if ($totalTasks === 0) {
+            $this->updateQuietly(['is_completed' => false]);
+            return;
+        }
+
+        $completedTasks = $this->tasks()->where('is_completed', true)->count();
+        $progress = round(($completedTasks / $totalTasks) * 100);
+        
+        $isCompleted = ($progress === 100);
+        $this->updateQuietly(['is_completed' => $isCompleted]);
+    }
+
     protected static function booted(): void
     {
         static::saved(function (Milestone $milestone) {
+            $milestone->updateCompletion();
             $milestone->project->updateProgress();
         });
         

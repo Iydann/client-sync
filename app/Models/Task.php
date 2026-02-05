@@ -39,4 +39,19 @@ class Task extends Model implements HasMedia
     {
         return $this->belongsToMany(User::class, 'task_user')->withTimestamps();
     }
+
+    protected static function booted(): void
+    {
+        static::saved(function (Task $task) {
+            if ($task->milestone) {
+                $task->milestone->updateCompletion();
+            }
+        });
+        
+        static::deleted(function (Task $task) {
+            if ($task->milestone) {
+                $task->milestone->updateCompletion();
+            }
+        });
+    }
 }

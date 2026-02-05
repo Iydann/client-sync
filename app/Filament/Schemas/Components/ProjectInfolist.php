@@ -93,10 +93,11 @@ class ProjectInfolist
                             ->getStateUsing(function ($record) {
                                 $contractValue = (float) ($record->contract_value ?? 0);
                                 $includeTax = (bool) ($record->include_tax ?? false);
+                                $grandTotal = (float) ($record->grand_total ?? 0);
                                 $ppnAmount = (float) ($record->ppn_amount ?? 0);
                                 $pphAmount = (float) ($record->pph_amount ?? 0);
                                 $subtotal = $includeTax
-                                    ? ($contractValue - $ppnAmount - $pphAmount)
+                                    ? (($grandTotal ?: $contractValue) - $ppnAmount - $pphAmount)
                                     : $contractValue;
 
                                 return 'Rp ' . number_format($subtotal, 0, ',', '.');
@@ -120,11 +121,12 @@ class ProjectInfolist
                             ->getStateUsing(function ($record) {
                                 $contractValue = (float) ($record->contract_value ?? 0);
                                 $includeTax = (bool) ($record->include_tax ?? false);
+                                $grandTotal = (float) ($record->grand_total ?? 0);
                                 $ppnAmount = (float) ($record->ppn_amount ?? 0);
                                 $pphAmount = (float) ($record->pph_amount ?? 0);
                                 $grandTotal = $includeTax
-                                    ? $contractValue
-                                    : ($contractValue + $ppnAmount + $pphAmount);
+                                    ? ($grandTotal ?: $contractValue)
+                                    : ($grandTotal ?: ($contractValue + $ppnAmount + $pphAmount));
 
                                 return 'Rp ' . number_format($grandTotal, 0, ',', '.');
                             })

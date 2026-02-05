@@ -54,10 +54,10 @@ class InvoiceForm
                 Section::make('Project Contract Information')
                     ->columns(2)
                     ->schema([
-                        Placeholder::make('contract_value')
-                            ->label('Contract Value')
+                        Placeholder::make('grand_total')
+                            ->label('Total Payment Required')
                             ->columnSpan('full')
-                            ->content(fn (callable $get) => self::formatContractValue($get('project_id'))),
+                            ->content(fn (callable $get) => self::formatGrandTotal($get('project_id'))),
                         Placeholder::make('total_invoiced')
                             ->label('Total Invoiced')
                             ->content(fn (callable $get) => self::formatTotalInvoiced($get('project_id'))),
@@ -110,13 +110,26 @@ class InvoiceForm
         return count($ids) + 1;
     }
 
-    private static function formatContractValue(?int $projectId): string
+    private static function formatGrandTotal(?int $projectId): string
     {
         if (!$projectId) {
             return 'IDR 0';
         }
         $project = Project::find($projectId);
-        return 'IDR ' . number_format($project?->contract_value ?? 0, 0, ',', '.');
+        if (!$project) {
+            return 'IDR 0';
+        }
+        $grandTotal = (float) ($project->grand_total ?? 0);
+        if ($grandTotal <= 0) {
+            // Fallback calculation if grand_total not set
+            $contractValue = (float) ($project->contract_value ?? 0);
+            if ($project->include_tax) {
+                $grandTotal = $contractValue;
+            } else {
+                $grandTotal = $contractValue + (float) ($project->ppn_amount ?? 0) + (float) ($project->pph_amount ?? 0);
+            }
+        }
+        return 'IDR ' . number_format($grandTotal, 0, ',', '.');
     }
 
     private static function formatTotalInvoiced(?int $projectId): string
@@ -143,11 +156,23 @@ class InvoiceForm
         if (!$project) {
             return 'IDR 0';
         }
-        $contractValue = $project->contract_value ?? 0;
+        
+        // Get grand total
+        $grandTotal = (float) ($project->grand_total ?? 0);
+        if ($grandTotal <= 0) {
+            // Fallback calculation if grand_total not set
+            $contractValue = (float) ($project->contract_value ?? 0);
+            if ($project->include_tax) {
+                $grandTotal = $contractValue;
+            } else {
+                $grandTotal = $contractValue + (float) ($project->ppn_amount ?? 0) + (float) ($project->pph_amount ?? 0);
+            }
+        }
+        
         $totalInvoiced = $project->invoices()
             ->where('status', '!=', 'cancelled')
             ->sum('amount') ?? 0;
-        $remaining = $contractValue - $totalInvoiced;
+        $remaining = $grandTotal - $totalInvoiced;
         return 'IDR ' . number_format($remaining, 0, ',', '.');
     }
 

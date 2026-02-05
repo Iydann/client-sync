@@ -285,7 +285,7 @@
                     </tr>
                     <tr>
                         <td class="label">Date</td>
-                        <td class="value">{{ $invoice->created_at->format('d/m/Y') }}</td>
+                        <td class="value">{{ $invoice->updated_at->format('d/m/Y') }}</td>
                     </tr>
                     <tr>
                         <td class="label">Due Date</td>

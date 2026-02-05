@@ -26,11 +26,6 @@ class MilestoneForm
 
                 TextInput::make('order')
                     ->numeric(),
-
-                Toggle::make('is_completed')
-                    ->label('Milestone Completed')
-                    ->default(false)
-                    ->columnSpanFull(),
             ]);
     }
 }
