@@ -27,6 +27,11 @@ class MilestoneResource extends Resource
 
     protected static bool $shouldRegisterNavigation = false;
 
+    public static function canAccess(): bool
+    {
+        return false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return MilestoneForm::configure($schema);
