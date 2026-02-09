@@ -11,6 +11,7 @@ use Filament\Actions\EditAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Forms;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class ProjectsRelationManager extends RelationManager
@@ -22,6 +23,39 @@ class ProjectsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return ProjectsTable::configure($table)
+            ->columns([
+                TextColumn::make('title')
+                    ->label('Project Title')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('progress')
+                    ->label('Progress')
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => $state . '%'),
+                TextColumn::make('status')
+                    ->badge()
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('contract_value')
+                    ->label('Contract Value')
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => 'IDR ' . number_format($state, 0, ',', '.')),
+                TextColumn::make('payment_progress')
+                    ->label('Payment Progress')
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => $state . '%'),
+                TextColumn::make('deadline')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
             ->headerActions([
                 CreateAction::make()
                     ->schema([

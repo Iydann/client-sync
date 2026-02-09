@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use Filament\Pages\Dashboard as BaseDashboard;
 use App\Filament\Traits\HasGlobalYearFilter;
+use Illuminate\Support\Facades\Auth;
 
 class Dashboard extends BaseDashboard
 {
@@ -11,4 +12,9 @@ class Dashboard extends BaseDashboard
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
     // protected static ?string $title = 'Dashboard Utama';
+
+    public static function canAccess(): bool
+    {
+        return Auth::user()?->can('View:Dashboard') ?? false;
+    }
 }

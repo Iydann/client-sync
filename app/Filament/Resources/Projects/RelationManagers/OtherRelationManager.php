@@ -20,6 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class OtherProjectsRelationManager extends RelationManager
@@ -31,6 +32,22 @@ class OtherProjectsRelationManager extends RelationManager
     protected static ?string $label = 'Related Projects';
     
     protected static ?string $pluralLabel = 'Related Projects';
+
+    public static function getBadge(Model $ownerRecord, string $pageClass): ?string
+    {
+        $rootProject = $ownerRecord->parentProject ?? $ownerRecord;
+
+        $count = Project::whereIn('id', function ($subquery) use ($rootProject) {
+            $subquery->select('id')
+                ->from('projects')
+                ->where('id', $rootProject->id)
+                ->orWhere('parent_project_id', $rootProject->id);
+        })
+            ->where('client_id', $ownerRecord->client_id)
+            ->count();
+
+        return (string) max(0, $count - 1);
+    }
 
     public function table(Table $table): Table
     {
@@ -55,6 +72,13 @@ class OtherProjectsRelationManager extends RelationManager
                 ->orderBy('created_at');
             })
             ->recordTitleAttribute('title')
+            ->recordClasses(function (Project $record): ?string {
+                if ($record->id !== $this->getOwnerRecord()->id) {
+                    return null;
+                }
+
+                return 'bg-gray-50 dark:bg-gray-900/40';
+            })
             ->recordUrl(fn ($record) => $record->id === $this->getOwnerRecord()->id
                 ? null
                 : ProjectResource::getUrl('view', [

@@ -72,4 +72,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserContribution::class);
     }
+
+    public function projectRequestsCreated(): HasMany
+    {
+        return $this->hasMany(ProjectRequest::class, 'created_by');
+    }
+
 }

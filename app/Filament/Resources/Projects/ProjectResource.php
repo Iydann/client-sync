@@ -91,6 +91,7 @@ class ProjectResource extends Resource
             RelationManagers\MembersRelationManager::class,
             RelationManagers\InvoicesRelationManager::class,
             RelationManagers\OtherProjectsRelationManager::class,
+            RelationManagers\ProjectRequestsRelationManager::class,
         ];
     }
 

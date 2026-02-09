@@ -17,6 +17,11 @@ class ProjectTimeline extends Page
 
     use HasGlobalYearFilter;
 
+    public static function canAccess(): bool
+    {
+        return Auth::user()?->can('View:ProjectTimeline') ?? false;
+    }
+
     public function getViewData(): array
     {
         $year = session('project_year', now()->year);

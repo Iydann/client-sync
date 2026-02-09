@@ -10,12 +10,18 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class MembersRelationManager extends RelationManager
 {
     protected static string $relationship = 'members';
 
     protected static ?string $title = 'Team Members';
+
+    public static function getBadge(Model $ownerRecord, string $pageClass): ?string
+    {
+        return (string) ($ownerRecord->members_count ?? $ownerRecord->members()->count());
+    }
 
     public function table(Table $table): Table
     {

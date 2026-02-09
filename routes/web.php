@@ -6,7 +6,8 @@ use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 Route::get('/', function () {
-    return view('welcome');
+    // return view('welcome');
+    return redirect('/portal');
 });
 Route::get('/invitation/{token}', [InvitationController::class, 'show'])->name('invitation.show');
 Route::post('/invitation/{token}', [InvitationController::class, 'store'])->name('invitation.store');

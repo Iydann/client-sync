@@ -12,7 +12,13 @@ class SetGlobalProjectYear
     {
         // 1. Cek apakah user sedang mengganti filter lewat dropdown (query param)
         if ($request->has('year')) {
-            session(['project_year' => $request->integer('year')]);
+            $year = $request->get('year');
+
+            if ($year === 'all') {
+                session(['project_year' => 'all']);
+            } elseif (is_numeric($year)) {
+                session(['project_year' => (int) $year]);
+            }
         }
 
         // 2. Jika tidak ada di session (login pertama), set default ke tahun ini

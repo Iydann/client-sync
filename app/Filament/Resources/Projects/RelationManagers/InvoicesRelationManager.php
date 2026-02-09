@@ -12,12 +12,18 @@ use Filament\Forms;
 use Filament\Schemas\Components\Section;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class InvoicesRelationManager extends RelationManager
 {
     protected static string $relationship = 'invoices';
 
     protected static ?string $title = 'Invoices';
+
+    public static function getBadge(Model $ownerRecord, string $pageClass): ?string
+    {
+        return (string) ($ownerRecord->invoices_count ?? $ownerRecord->invoices()->count());
+    }
 
     public function table(Table $table): Table
     {

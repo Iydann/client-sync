@@ -48,6 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('portal')
+            ->brandName('Client Sync')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->colors([

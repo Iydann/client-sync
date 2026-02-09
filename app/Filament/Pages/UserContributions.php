@@ -20,7 +20,13 @@ class UserContributions extends Page
 
     public static function canAccess(): bool
     {
-        return !Auth::user()?->hasRole('client');
+        $user = Auth::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return !$user->hasRole('client') && $user->can('View:UserContributions');
     }
 
     use HasGlobalYearFilter;

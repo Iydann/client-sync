@@ -17,6 +17,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,6 +26,11 @@ class MilestonesRelationManager extends RelationManager
     protected static string $relationship = 'milestones';
 
     protected static ?string $title = 'Milestones';
+
+    public static function getBadge(Model $ownerRecord, string $pageClass): ?string
+    {
+        return (string) ($ownerRecord->milestones_count ?? $ownerRecord->milestones()->count());
+    }
 
     public function form(Schema $schema): Schema
     {
