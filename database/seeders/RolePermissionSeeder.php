@@ -63,6 +63,8 @@ class RolePermissionSeeder extends Seeder
             'ViewAny:ProjectRequestMessage',
             'View:ProjectRequestMessage',
             'Create:ProjectRequestMessage',
+            'ViewAny:Task',
+            'View:Task',
         ];
         
         $existingClientPermissions = Permission::whereIn('name', $clientPermissions)->pluck('name');
@@ -72,23 +74,22 @@ class RolePermissionSeeder extends Seeder
                 ->merge($existingWidgetPermissions));
         }
 
-        // Developer - can manage projects, milestones, and reply to requests
+        // Developer - view-only for projects and milestones, can reply to requests
         $developerPermissions = [
             // Project permissions
             'ViewAny:Project',
             'View:Project',
-            'Create:Project',
-            'Update:Project',
-            'Delete:Project',
-            'Restore:Project',
             
             // Milestone permissions
             'ViewAny:Milestone',
             'View:Milestone',
-            'Create:Milestone',
-            'Update:Milestone',
-            'Delete:Milestone',
-            'Restore:Milestone',
+
+            // Task permissions
+            'ViewAny:Task',
+            'View:Task',
+            'Create:Task',
+            'Update:Task',
+            'Delete:Task',
             
             // Can view clients (read-only)
             'ViewAny:Client',
