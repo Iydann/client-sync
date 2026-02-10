@@ -7,7 +7,6 @@ use App\ProjectRequestType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -47,10 +46,6 @@ class ProjectRequest extends Model implements HasMedia
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function messages(): HasMany
-    {
-        return $this->hasMany(ProjectRequestMessage::class);
-    }
 
     public function isDiscussionClosed(): bool
     {

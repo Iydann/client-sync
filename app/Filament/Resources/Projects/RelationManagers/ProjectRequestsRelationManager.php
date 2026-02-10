@@ -5,13 +5,10 @@ namespace App\Filament\Resources\Projects\RelationManagers;
 use App\Filament\Resources\ProjectRequests\ProjectRequestResource;
 use App\Filament\Resources\ProjectRequests\Schemas\ProjectRequestForm;
 use App\Models\ProjectRequest;
-use App\Models\ProjectRequestMessage;
-use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Textarea;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -62,50 +59,6 @@ class ProjectRequestsRelationManager extends RelationManager
                     ->schema($formSchema),
                 DeleteAction::make()
                     ->visible(fn () => ProjectRequestResource::isAdminUser()),
-                Action::make('reply')
-                    ->label('Reply')
-                    ->visible(fn (ProjectRequest $record) => $this->canReply($record))
-                    ->form([
-                        Textarea::make('message')
-                            ->required()
-                            ->rows(4),
-                    ])
-                    ->action(function (ProjectRequest $record, array $data): void {
-                        ProjectRequestMessage::create([
-                            'project_request_id' => $record->id,
-                            'user_id' => Auth::id(),
-                            'message' => $data['message'],
-                        ]);
-                    }),
             ]);
-    }
-
-    protected function canReply(ProjectRequest $request): bool
-    {
-        $user = Auth::user();
-
-        if (!$user || !$user->can('Create:ProjectRequestMessage')) {
-            return false;
-        }
-
-        if (ProjectRequestResource::isAdminUser($user)) {
-            return true;
-        }
-
-        if (!$request->isDiscussionOpenForParticipants()) {
-            return false;
-        }
-
-        if (ProjectRequestResource::isClientUser($user)) {
-            return $request->client_id === $user->client?->id;
-        }
-
-        if (ProjectRequestResource::isDeveloperUser($user)) {
-            return $request->project
-                ? $request->project->members()->where('users.id', $user->id)->exists()
-                : false;
-        }
-
-        return false;
     }
 }

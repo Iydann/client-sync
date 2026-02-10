@@ -23,19 +23,10 @@ return new class extends Migration
             $table->index(['project_id', 'status']);
         });
 
-        Schema::create('project_request_messages', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('project_request_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->text('message');
-            $table->timestamps();
-        });
-
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('project_request_messages');
         Schema::dropIfExists('project_requests');
     }
 };

@@ -60,9 +60,6 @@ class RolePermissionSeeder extends Seeder
             'ViewAny:ProjectRequest',
             'View:ProjectRequest',
             'Create:ProjectRequest',
-            'ViewAny:ProjectRequestMessage',
-            'View:ProjectRequestMessage',
-            'Create:ProjectRequestMessage',
             'ViewAny:Task',
             'View:Task',
         ];
@@ -98,9 +95,6 @@ class RolePermissionSeeder extends Seeder
             // Request permissions (read + reply only)
             'ViewAny:ProjectRequest',
             'View:ProjectRequest',
-            'ViewAny:ProjectRequestMessage',
-            'View:ProjectRequestMessage',
-            'Create:ProjectRequestMessage',
         ];
         
         $existingDeveloperPermissions = Permission::whereIn('name', $developerPermissions)->pluck('name');
