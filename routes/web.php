@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InvitationController;
 use App\Models\Invoice;
@@ -17,3 +18,17 @@ Route::get('/invoice/{invoice}/preview', function (Invoice $invoice) {
     $pdf = Pdf::loadView('pdf.invoice', ['invoice' => $invoice]);
     return $pdf->stream($invoice->invoice_number . '.pdf');
 })->name('invoice.preview')->middleware('auth');
+
+Route::post('/portal/project-year', function (Request $request) {
+    $year = $request->input('year');
+
+    if ($year === 'all') {
+        session(['project_year' => 'all']);
+    } elseif (is_numeric($year)) {
+        session(['project_year' => (int) $year]);
+    }
+
+    return response()->json([
+        'year' => session('project_year', now()->year),
+    ]);
+})->name('project-year.set')->middleware('auth');

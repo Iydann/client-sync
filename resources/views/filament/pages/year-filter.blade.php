@@ -1,9 +1,23 @@
 <div class="mr-3"
     x-data="{
         year: @js($currentYear),
-        changeYear(value) {
+        async changeYear(value) {
             const url = new URL(window.location.href)
             url.searchParams.set('year', value)
+
+            try {
+                await fetch(@js(route('project-year.set')), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': @js(csrf_token()),
+                    },
+                    body: JSON.stringify({ year: value }),
+                })
+            } catch (error) {
+                // Ignore network errors to avoid blocking UI updates.
+            }
 
             if (window.Livewire?.dispatch) {
                 window.history.replaceState({}, '', url.toString())

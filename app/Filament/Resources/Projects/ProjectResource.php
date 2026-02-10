@@ -61,9 +61,17 @@ class ProjectResource extends Resource
         }
     
         $year = session('project_year', now()->year);
+        $recordId = request()->route('record');
 
         if ($year && $year !== 'all') {
-            $query->whereYear('contract_date', $year);
+            if ($recordId) {
+                $query->where(function (Builder $subQuery) use ($year, $recordId) {
+                    $subQuery->whereYear('contract_date', $year)
+                        ->orWhere('id', $recordId);
+                });
+            } else {
+                $query->whereYear('contract_date', $year);
+            }
         }
 
         return $query;
