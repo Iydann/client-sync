@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Facades\Auth;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class StatsOverview extends StatsOverviewWidget
 {
+    use HasWidgetShield;
     protected ?string $pollingInterval = null;
 
     public $year;
@@ -34,14 +36,11 @@ class StatsOverview extends StatsOverviewWidget
         return false;
     }
 
-    /**
-     * Helper Sakti: Filter Tahun + Filter Client (Otomatis)
-     */
     private function applyFilters(Builder $query, string $dateColumn = 'created_at'): Builder
     {
         $user = Auth::user();
         
-        // 1. Jika Role Client, filter data milik dia saja
+        // Jika Role Client, filter data milik dia saja
         if ($user && $user->hasRole('client')) {
             $model = $query->getModel();
             
@@ -54,7 +53,7 @@ class StatsOverview extends StatsOverviewWidget
             }
         }
 
-        // 2. Filter Tahun (Logika Lama Anda)
+        // Filter Tahun
         return $this->year === 'all' 
             ? $query 
             : $query->whereYear($dateColumn, $this->year);

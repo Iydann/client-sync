@@ -3,23 +3,21 @@
 namespace App\Filament\Widgets;
 
 use App\Models\User;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
 use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
 
+
 class IdleDevelopersWidget extends TableWidget
 {
+    use HasWidgetShield;
     protected static ?int $sort = 2;
     protected int|string|array $columnSpan = 'full';
     
     protected static ?string $heading = 'Idle Developers';
-
-    public static function canView(): bool
-    {
-        return auth()->user()->hasAnyRole(['super_admin', 'admin']);
-    }
 
     public function table(Table $table): Table
     {
@@ -44,7 +42,6 @@ class IdleDevelopersWidget extends TableWidget
                     ->sortable(),
             ])
             ->actions([
-                // Aksi diarahkan ke Edit User agar bisa menambah Project di sana
                 Action::make('assign_project')
                     ->label('Assign Project')
                     ->icon('heroicon-m-briefcase')

@@ -7,10 +7,13 @@ use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth; // Tambahan Import
+use Illuminate\Support\Facades\Auth;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class UpcomingProjectDeadlines extends BaseWidget
 {
+    use HasWidgetShield;
+
     protected static ?int $sort = 3;
     
     protected int | string | array $columnSpan = 'full';
