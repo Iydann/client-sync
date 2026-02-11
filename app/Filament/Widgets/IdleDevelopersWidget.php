@@ -14,8 +14,7 @@ class IdleDevelopersWidget extends TableWidget
     protected static ?int $sort = 2;
     protected int|string|array $columnSpan = 'full';
     
-    // Judul saya ganti agar lebih akurat secara konteks
-    protected static ?string $heading = 'Unassigned Developers (Bench)';
+    protected static ?string $heading = 'Idle Developers';
 
     public static function canView(): bool
     {
@@ -26,12 +25,7 @@ class IdleDevelopersWidget extends TableWidget
     {
         return $table
             ->query(
-                User::query()
-                    ->whereHas('roles', fn (Builder $query) => $query->where('name', 'developer'))
-                
-                    ->whereDoesntHave('projects', function (Builder $query) {
-                        $query->whereIn('status', ['in_progress', 'pending']);
-                    })
+                $this->getIdleDevelopersQuery()
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -44,24 +38,50 @@ class IdleDevelopersWidget extends TableWidget
                     ->icon('heroicon-m-envelope')
                     ->copyable(),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Joined Since')
-                    ->dateTime('d M Y')
+                Tables\Columns\TextColumn::make('last_project')
+                    ->label('Last Project')
+                    ->getStateUsing(fn (User $record): string => $this->formatLastProject($record))
                     ->sortable(),
-
-                Tables\Columns\TextColumn::make('status')
-                    ->default('Bench / Idle')
-                    ->badge()
-                    ->color('danger'),
             ])
             ->actions([
                 // Aksi diarahkan ke Edit User agar bisa menambah Project di sana
                 Action::make('assign_project')
                     ->label('Assign Project')
                     ->icon('heroicon-m-briefcase')
-                    ->url(fn (User $record): string => route('filament.admin.resources.users.edit', $record))
+                    ->url(fn (): string => $this->getAssignProjectUrl())
                     ->button(),
             ])
             ->paginated(false);
+    }
+
+    private function getIdleDevelopersQuery(): Builder
+    {
+        return User::query()
+            ->whereHas('roles', fn (Builder $query) => $query->where('name', 'developer'))
+            ->whereDoesntHave('projects', function (Builder $query) {
+                $query->where('status', '!=', 'completed');
+            })
+            ->with(['projects' => function ($query) {
+                $query->orderBy('project_members.created_at', 'desc');
+            }]);
+    }
+
+    private function formatLastProject(User $record): string
+    {
+        $project = $record->projects->first();
+
+        if (!$project) {
+            return 'No Project Assigned';
+        }
+
+        $assignedAt = $project->pivot?->created_at?->format('d M Y');
+        return $assignedAt
+            ? "{$project->title} ({$assignedAt})"
+            : $project->title;
+    }
+
+    private function getAssignProjectUrl(): string
+    {
+        return rtrim((string) config('app.url'), '/') . '/portal/projects?tab=active';
     }
 }
