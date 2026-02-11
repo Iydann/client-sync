@@ -125,13 +125,7 @@ class StatsOverview extends StatsOverviewWidget
             ->color('success') 
             ->chart([$totalPaidInvoices, $totalInvoiced, $totalContractedValue]);
 
-        if ($isClient) {
-            $card2 = Stat::make('Unpaid Invoices' . $labelSuffix, $formatRp($totalUnpaidInvoices))
-                ->description('Amount due')
-                ->icon('heroicon-o-exclamation-circle')
-                ->color($totalUnpaidInvoices > 0 ? 'danger' : 'success')
-                ->chart([$totalUnpaidInvoices, $totalPaidInvoices]);
-        } else {
+        if (! $isClient) {
             $totalClients = $this->applyFilters(Client::query(), 'created_at')->count();
             $totalIndividualClients = $this->applyFilters(Client::where('client_type', 'individual'), 'created_at')->count();
             $totalCorporateClients = $this->applyFilters(Client::where('client_type', 'corporate'), 'created_at')->count();
@@ -155,6 +149,8 @@ class StatsOverview extends StatsOverviewWidget
                 ->chart([$totalIndividualClients, $totalCorporateClients, $totalGovernmentClients]);
         }
 
-        return [$card1, $card2, $card3];
+        return $isClient
+            ? [$card1, $card3]
+            : [$card1, $card2, $card3];
     }
 }
