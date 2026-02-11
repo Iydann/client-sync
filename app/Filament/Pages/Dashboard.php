@@ -15,6 +15,6 @@ class Dashboard extends BaseDashboard
 
     public static function canAccess(): bool
     {
-        return Auth::user()?->can('View:Dashboard') ?? false;
+        return Auth::check();
     }
 }

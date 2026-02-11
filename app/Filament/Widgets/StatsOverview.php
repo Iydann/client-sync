@@ -64,6 +64,8 @@ class StatsOverview extends StatsOverviewWidget
     {
         // Cek apakah user adalah Client
         $isClient = Auth::user()?->hasRole('client');
+        $yearLabel = $this->year === 'all' ? 'All' : (string) $this->year;
+        $labelSuffix = " ({$yearLabel})";
 
         $totalProjects = $this->applyFilters(Project::query(), 'contract_date')->count();
         
@@ -112,20 +114,20 @@ class StatsOverview extends StatsOverviewWidget
             number_format($uninvoicedAmount, 0, ',', '.')
         ));
         
-        $card1 = Stat::make('Total Projects', $totalProjects)
+        $card1 = Stat::make('Total Projects' . $labelSuffix, $totalProjects)
             ->description($projectDescription)
             ->chart([$completedProjects, $inProgressProjects, $pendingProjects, $cancelledProjects]) 
             ->icon('heroicon-o-rectangle-stack')
             ->color('info');
 
-        $card3 = Stat::make('Total Contract Value', $formatRp($totalContractedValue))
+        $card3 = Stat::make('Total Contract Value' . $labelSuffix, $formatRp($totalContractedValue))
             ->description($financeDescription)
             ->icon('heroicon-o-currency-dollar')
             ->color('success') 
             ->chart([$totalPaidInvoices, $totalInvoiced, $totalContractedValue]);
 
         if ($isClient) {
-            $card2 = Stat::make('Unpaid Invoices', $formatRp($totalUnpaidInvoices))
+            $card2 = Stat::make('Unpaid Invoices' . $labelSuffix, $formatRp($totalUnpaidInvoices))
                 ->description('Amount due')
                 ->icon('heroicon-o-exclamation-circle')
                 ->color($totalUnpaidInvoices > 0 ? 'danger' : 'success')
@@ -147,7 +149,7 @@ class StatsOverview extends StatsOverviewWidget
                 number_format($totalGovernmentClients, 0, ',', '.')
             ));
 
-            $card2 = Stat::make('Total Clients', $totalClients)
+            $card2 = Stat::make('Total Clients' . $labelSuffix, $totalClients)
                 ->description($clientDescription)
                 ->icon('heroicon-o-users')
                 ->color('primary')

@@ -60,12 +60,6 @@ class ProjectRequestResource extends Resource
             $query->whereHas('project.members', fn (Builder $q) => $q->where('users.id', $user->id));
         }
 
-        $year = session('project_year', now()->year);
-
-        if ($year && $year !== 'all') {
-            $query->whereYear('created_at', $year);
-        }
-
         return $query;
     }
 

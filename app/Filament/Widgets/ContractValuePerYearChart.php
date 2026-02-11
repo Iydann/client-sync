@@ -8,19 +8,17 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Illuminate\Support\Carbon;
 use Illuminate\Contracts\Support\Htmlable;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 
 class ContractValuePerYearChart extends ChartWidget
 {
+    use HasWidgetShield;
+
     protected static ?int $sort = 2;
 
     protected ?string $pollingInterval = null;
 
     public string|int $year;
-
-    public static function canView(): bool
-    {
-        return ! Auth::user()?->hasRole('client');
-    }
 
     public function mount(): void
     {
@@ -41,9 +39,11 @@ class ContractValuePerYearChart extends ChartWidget
 
     public function getHeading(): string | Htmlable
     {
-        return $this->year === 'all'
-            ? 'Total Contract Value per Year'
-            : "Total Contract Value in {$this->year}";
+        $year = $this->year ?? 'all';
+
+        return $year === 'all'
+            ? 'Total Contract Value per Year (All)'
+            : "Total Contract Value per Month ({$year})";
     }
 
 

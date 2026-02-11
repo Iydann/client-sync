@@ -28,9 +28,16 @@ class RolePermissionSeeder extends Seeder
             $superAdminRole->syncPermissions($allPermissions);
         }
         
-        // Admin - has full access to all permissions
-        $adminPermissions = Permission::all()->pluck('name');
-        
+        // Admin - has full access except roles/permissions management (shield)
+        $restrictedAdminPermissions = Permission::query()
+            ->where('name', 'like', '%:Role')
+            ->orWhere('name', 'like', '%:Permission')
+            ->pluck('name');
+
+        $adminPermissions = Permission::query()
+            ->whereNotIn('name', $restrictedAdminPermissions)
+            ->pluck('name');
+
         if ($adminPermissions->isNotEmpty()) {
             $adminRole->syncPermissions($adminPermissions);
         }
@@ -39,14 +46,20 @@ class RolePermissionSeeder extends Seeder
             'View:Dashboard',
         ];
 
-        $widgetPermissions = [
+        $widgetPermissionsForStaff = [
             'View:StatsOverview',
             'View:ContractValuePerYearChart',
             'View:UpcomingProjectDeadlines',
         ];
 
+        $widgetPermissionsForClient = [
+            'View:StatsOverview',
+            'View:UpcomingProjectDeadlines',
+        ];
+
         $existingPagePermissions = Permission::whereIn('name', $pagePermissionsAll)->pluck('name');
-        $existingWidgetPermissions = Permission::whereIn('name', $widgetPermissions)->pluck('name');
+        $existingWidgetPermissionsForStaff = Permission::whereIn('name', $widgetPermissionsForStaff)->pluck('name');
+        $existingWidgetPermissionsForClient = Permission::whereIn('name', $widgetPermissionsForClient)->pluck('name');
 
         // Client - can only view their own projects, milestones, invoices, and requests
         // ViewAny is needed for sidebar navigation, but Policy will filter to show only their data
@@ -68,7 +81,7 @@ class RolePermissionSeeder extends Seeder
         if ($existingClientPermissions->isNotEmpty()) {
             $clientRole->syncPermissions($existingClientPermissions
                 ->merge($existingPagePermissions)
-                ->merge($existingWidgetPermissions));
+                ->merge($existingWidgetPermissionsForClient));
         }
 
         // Developer - view-only for projects and milestones, can reply to requests
@@ -101,7 +114,8 @@ class RolePermissionSeeder extends Seeder
         if ($existingDeveloperPermissions->isNotEmpty()) {
             $developerRole->syncPermissions($existingDeveloperPermissions
                 ->merge($existingPagePermissions)
-                ->merge($existingWidgetPermissions));
+                ->merge($existingWidgetPermissionsForStaff));
+                
         }
 
         $this->command->info('Roles and permissions seeded successfully!');
