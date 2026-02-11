@@ -7,16 +7,15 @@ use App\Models\Project;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Illuminate\Support\Carbon;
+use Illuminate\Contracts\Support\Htmlable;
 
 class ContractValuePerYearChart extends ChartWidget
 {
-    protected ?string $heading = 'Total Contracted Value per Year';
-
     protected static ?int $sort = 2;
 
     protected ?string $pollingInterval = null;
 
-    public $year;
+    public string|int $year;
 
     public static function canView(): bool
     {
@@ -25,13 +24,13 @@ class ContractValuePerYearChart extends ChartWidget
 
     public function mount(): void
     {
-        $this->year = session('project_year', now()->year);
+        $this->year = session('project_year', 'all');
     }
 
     #[On('yearChanged')]
     public function updateYear($year): void
     {
-        $this->year = $year;
+        $this->year = $year ?: 'all';
         $this->dispatch('$refresh');
     }
 
@@ -40,9 +39,18 @@ class ContractValuePerYearChart extends ChartWidget
         return false;
     }
 
+    public function getHeading(): string | Htmlable
+    {
+        return $this->year === 'all'
+            ? 'Total Contract Value per Year'
+            : "Total Contract Value in {$this->year}";
+    }
+
+
     protected function getData(): array
     {
-        if ($this->year && $this->year !== 'all') {
+        // ===== MONTHLY (specific year) =====
+        if ($this->year !== 'all') {
             $monthly = Project::query()
                 ->selectRaw('MONTH(contract_date) as month, SUM(contract_value) as total')
                 ->whereNotNull('contract_date')
@@ -63,7 +71,7 @@ class ContractValuePerYearChart extends ChartWidget
             return [
                 'datasets' => [
                     [
-                        'label' => 'Total Contract Value',
+                        'label' => "Monthly Contract Value ({$this->year})",
                         'data' => $values,
                     ],
                 ],
@@ -71,6 +79,7 @@ class ContractValuePerYearChart extends ChartWidget
             ];
         }
 
+        // ===== YEARLY (all years) =====
         $yearly = Project::query()
             ->selectRaw('YEAR(contract_date) as year, SUM(contract_value) as total')
             ->whereNotNull('contract_date')
@@ -81,8 +90,8 @@ class ContractValuePerYearChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Total Contract Value',
-                    'data' => $yearly->pluck('total'),
+                    'label' => 'Annual Contract Value',
+                    'data' => $yearly->pluck('total')->map(fn ($v) => (float) $v),
                 ],
             ],
             'labels' => $yearly->pluck('year'),
@@ -91,6 +100,6 @@ class ContractValuePerYearChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'bar'; 
+        return 'bar';
     }
 }
