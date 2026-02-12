@@ -209,15 +209,15 @@ class Project extends Model implements HasMedia
     public function invoices() {
         return $this->hasMany(Invoice::class);
     }
-
-    public function requests()
-    {
-        return $this->hasMany(ProjectRequest::class);
-    }
     
     public function members(){
         return $this->belongsToMany(User::class, 'project_members')
             ->withTimestamps();
+    }
+
+    public function discussions()
+    {
+        return $this->hasMany(ProjectDiscussion::class);
     }
 
     protected static function booted(): void {

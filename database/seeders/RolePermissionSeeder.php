@@ -72,7 +72,7 @@ class RolePermissionSeeder extends Seeder
         $existingWidgetPermissionsForStaff = Permission::whereIn('name', $widgetPermissionsForStaff)->pluck('name');
         $existingWidgetPermissionsForClient = Permission::whereIn('name', $widgetPermissionsForClient)->pluck('name');
 
-        // Client - can only view their own projects, milestones, invoices, and requests
+        // Client - can only view their own projects, milestones, and invoices
         // ViewAny is needed for sidebar navigation, but Policy will filter to show only their data
         $clientPermissions = [
             'ViewAny:Project',
@@ -81,9 +81,6 @@ class RolePermissionSeeder extends Seeder
             'View:Milestone',
             'ViewAny:Invoice',
             'View:Invoice',
-            'ViewAny:ProjectRequest',
-            'View:ProjectRequest',
-            'Create:ProjectRequest',
             'ViewAny:Task',
             'View:Task',
         ];
@@ -96,7 +93,7 @@ class RolePermissionSeeder extends Seeder
                 ->merge($existingWidgetPermissionsForClient));
         }
 
-        // Developer - view-only for projects and milestones, can reply to requests
+        // Developer - view-only for projects and milestones
         $developerPermissions = [
             // Project permissions
             'ViewAny:Project',
@@ -116,10 +113,6 @@ class RolePermissionSeeder extends Seeder
             // Can view clients (read-only)
             'ViewAny:Client',
             'View:Client',
-
-            // Request permissions (read + reply only)
-            'ViewAny:ProjectRequest',
-            'View:ProjectRequest',
         ];
         
         $existingDeveloperPermissions = Permission::whereIn('name', $developerPermissions)->pluck('name');
