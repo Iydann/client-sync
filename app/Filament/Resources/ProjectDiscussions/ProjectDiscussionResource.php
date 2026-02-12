@@ -28,6 +28,8 @@ class ProjectDiscussionResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Project Management';
 
+    protected static ?int $navigationSort = 4;
+
     public static function form(Schema $schema): Schema
     {
         return ProjectDiscussionForm::configure($schema);

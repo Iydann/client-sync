@@ -25,10 +25,6 @@ class ProjectDiscussionsTable
                     ->label('Project')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('client.name')
-                    ->label('Client')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('discussions_count')
                     ->label('Messages')
                     ->badge()

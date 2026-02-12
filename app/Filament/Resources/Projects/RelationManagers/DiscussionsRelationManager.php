@@ -15,6 +15,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 class DiscussionsRelationManager extends RelationManager
@@ -22,6 +23,11 @@ class DiscussionsRelationManager extends RelationManager
     protected static string $relationship = 'discussions';
 
     protected static ?string $title = 'Discussions';
+
+    public static function getBadge(Model $ownerRecord, string $pageClass): ?string
+    {
+        return (string) ($ownerRecord->discussions_count ?? $ownerRecord->discussions()->count());
+    }
 
     public function form(Schema $schema): Schema
     {
@@ -65,6 +71,7 @@ class DiscussionsRelationManager extends RelationManager
             ])
             ->headerActions([
                 CreateAction::make()
+                    ->label('New Message')
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['user_id'] = Auth::id();
                         return $data;

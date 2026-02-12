@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\ProjectDiscussions\Schemas;
 
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectDiscussionForm
 {
@@ -13,17 +13,13 @@ class ProjectDiscussionForm
     {
         return $schema
             ->components([
-                Select::make('project_id')
-                    ->relationship('project', 'title')
-                    ->required(),
-                Select::make('user_id')
-                    ->relationship('user', 'name')
-                    ->required(),
+                Hidden::make('project_id')
+                    ->default(fn () => request()->route('projectId') ?? request()->query('projectId')),
+                Hidden::make('user_id')
+                    ->default(Auth::id()),
                 Textarea::make('message')
                     ->required()
                     ->columnSpanFull(),
-                Toggle::make('is_internal')
-                    ->required(),
             ]);
     }
 }
