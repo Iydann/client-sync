@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class OtherProjectsRelationManager extends RelationManager
+class RelatedProjectsRelationManager extends RelationManager
 {
     protected static string $relationship = 'childProjects';
 
