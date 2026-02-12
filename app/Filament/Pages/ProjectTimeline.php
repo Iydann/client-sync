@@ -44,6 +44,12 @@ class ProjectTimeline extends Page
             }
         }
 
+        if ($user && $user->hasRole('developer')) {
+            $query->whereHas('members', function ($subQuery) use ($user) {
+                $subQuery->where('users.id', $user->id);
+            });
+        }
+
         // Filter Tahun (LOGIKA BARU: OVERLAP / IRISAN)
         // Menangani kasus proyek lintas tahun (misal: Mulai 2025, Selesai 2026)
         // agar muncul di filter 2025 MAUPUN 2026.

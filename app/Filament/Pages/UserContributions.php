@@ -34,6 +34,7 @@ class UserContributions extends Page
     protected function getViewData(): array
     {
         $year = session('project_year', now()->year);
+        $viewer = Auth::user();
 
         if ($year === 'all') {
             $from = now()->subYear()->startOfDay(); 
@@ -44,7 +45,11 @@ class UserContributions extends Page
             $to   = Carbon::createFromDate($yearInt, 12, 31)->endOfDay();
         }
         
-        $users = User::role('developer')->get(); 
+        if ($viewer && $viewer->hasRole('developer')) {
+            $users = User::whereKey($viewer->id)->get();
+        } else {
+            $users = User::role('developer')->get();
+        }
 
         $stats = [];
 

@@ -46,6 +46,15 @@ class RolePermissionSeeder extends Seeder
             'View:Dashboard',
         ];
 
+        $pagePermissionsForClient = [
+            'View:ProjectTimeline',
+        ];
+
+        $pagePermissionsForStaff = [
+            'View:ProjectTimeline',
+            'View:UserContributions',
+        ];
+
         $widgetPermissionsForStaff = [
             'View:StatsOverview',
             'View:ContractValuePerYearChart',
@@ -58,6 +67,8 @@ class RolePermissionSeeder extends Seeder
         ];
 
         $existingPagePermissions = Permission::whereIn('name', $pagePermissionsAll)->pluck('name');
+        $existingPagePermissionsForClient = Permission::whereIn('name', $pagePermissionsForClient)->pluck('name');
+        $existingPagePermissionsForStaff = Permission::whereIn('name', $pagePermissionsForStaff)->pluck('name');
         $existingWidgetPermissionsForStaff = Permission::whereIn('name', $widgetPermissionsForStaff)->pluck('name');
         $existingWidgetPermissionsForClient = Permission::whereIn('name', $widgetPermissionsForClient)->pluck('name');
 
@@ -81,6 +92,7 @@ class RolePermissionSeeder extends Seeder
         if ($existingClientPermissions->isNotEmpty()) {
             $clientRole->syncPermissions($existingClientPermissions
                 ->merge($existingPagePermissions)
+                ->merge($existingPagePermissionsForClient)
                 ->merge($existingWidgetPermissionsForClient));
         }
 
@@ -114,6 +126,7 @@ class RolePermissionSeeder extends Seeder
         if ($existingDeveloperPermissions->isNotEmpty()) {
             $developerRole->syncPermissions($existingDeveloperPermissions
                 ->merge($existingPagePermissions)
+                ->merge($existingPagePermissionsForStaff)
                 ->merge($existingWidgetPermissionsForStaff));
                 
         }
