@@ -81,6 +81,9 @@ class RolePermissionSeeder extends Seeder
             'View:Milestone',
             'ViewAny:Invoice',
             'View:Invoice',
+            'ViewAny:ProjectDiscussion',
+            'View:ProjectDiscussion',
+            'Create:ProjectDiscussion',
             'ViewAny:Task',
             'View:Task',
         ];
@@ -113,6 +116,11 @@ class RolePermissionSeeder extends Seeder
             // Can view clients (read-only)
             'ViewAny:Client',
             'View:Client',
+
+            // Discussion permissions
+            'ViewAny:ProjectDiscussion',
+            'View:ProjectDiscussion',
+            'Create:ProjectDiscussion',
         ];
         
         $existingDeveloperPermissions = Permission::whereIn('name', $developerPermissions)->pluck('name');

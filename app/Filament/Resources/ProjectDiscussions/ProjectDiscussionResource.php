@@ -3,13 +3,12 @@
 namespace App\Filament\Resources\ProjectDiscussions;
 
 use App\Filament\Resources\ProjectDiscussions\Pages;
-use App\Filament\Resources\ProjectDiscussions\Pages\CreateProjectDiscussion;
-use App\Filament\Resources\ProjectDiscussions\Pages\EditProjectDiscussion;
 use App\Filament\Resources\ProjectDiscussions\Pages\ListProjectDiscussions;
 use App\Filament\Resources\ProjectDiscussions\Pages\ViewProjectDiscussion;
 use App\Filament\Resources\ProjectDiscussions\Schemas\ProjectDiscussionForm;
 use App\Filament\Resources\ProjectDiscussions\Tables\ProjectDiscussionsTable;
 use App\Models\ProjectDiscussion;
+use App\Providers\Filament\AdminPanelProvider;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -29,6 +28,11 @@ class ProjectDiscussionResource extends Resource
     protected static string|\UnitEnum|null $navigationGroup = 'Project Management';
 
     protected static ?int $navigationSort = 4;
+
+    public static function getNavigationGroup(): string
+    {
+        return AdminPanelProvider::getNavigationGroupName();
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -51,8 +55,6 @@ class ProjectDiscussionResource extends Resource
     {
         return [
             'index' => ListProjectDiscussions::route('/'),
-            'create' => CreateProjectDiscussion::route('/create'),
-            'edit' => EditProjectDiscussion::route('/{record}/edit'),
             'view' => ViewProjectDiscussion::route('/project/{projectId}'),
         ];
     }

@@ -33,6 +33,9 @@ class DiscussionsRelationManager extends RelationManager
     {
         return $schema
             ->components([
+                Hidden::make('project_id')
+                    ->default(fn (RelationManager $livewire) => $livewire->getOwnerRecord()->getKey())
+                    ->dehydrated(),
                 Hidden::make('user_id')
                     ->default(Auth::id()),
 
@@ -72,9 +75,13 @@ class DiscussionsRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->label('New Message')
-                    ->mutateFormDataUsing(function (array $data): array {
+                    ->mutateFormDataUsing(function (array $data, RelationManager $livewire): array {
+                        $data['project_id'] ??= $livewire->getOwnerRecord()->getKey();
                         $data['user_id'] = Auth::id();
                         return $data;
+                    })
+                    ->using(function (array $data, RelationManager $livewire): ProjectDiscussion {
+                        return $livewire->getOwnerRecord()->discussions()->create($data);
                     }),
             ])
             ->actions([

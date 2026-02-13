@@ -13,13 +13,25 @@ use App\Models\Project;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProjectDiscussions\ProjectDiscussionResource;
 use App\Filament\Resources\ProjectDiscussions\Pages\ViewProjectDiscussion;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectDiscussionsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(Project::query()->withCount('discussions'))
+            ->query(
+                Project::query()
+                    ->withCount('discussions')
+                    ->when(Auth::user()?->hasRole('client'), function (Builder $query) {
+                        $query->where('client_id', Auth::user()?->client?->id);
+                    })
+                    ->when(Auth::user()?->hasRole('developer'), function (Builder $query) {
+                        $query->whereHas('members', function (Builder $subQuery) {
+                            $subQuery->where('users.id', Auth::id());
+                        });
+                    })
+            )
             ->columns([
                 TextColumn::make('title')
                     ->label('Project')
